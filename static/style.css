@@ -1,0 +1,17 @@
+
+h1{
+    text-align: center;
+}
+
+.botText{
+    color:white;
+    font-size: 17px;
+    text-align: left;
+    line-height: 30px;
+}
+
+.botText span{
+    background-color:aqua;
+    padding: 10px;
+    border-radius: 2px;
+}
