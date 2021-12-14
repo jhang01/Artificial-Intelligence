@@ -32,15 +32,29 @@ doc = nlp(text)
 while(True):
     user = input()
     user = nlp(user)
+    sentence = []
 
     matcher = Matcher(nlp.vocab)
-    fromStation = [{'TEXT': 'from'}, {'ENT_TYPE': 'GPE'}]
+    fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE'}]
     matcher.add('from', [fromStation])
     matches = matcher(user)
 
-    print("matches found: ", len(matches))
+    #print("matches found: ", len(matches))
     for match_id, start, end in matches:
-        print("Match found:", user[start:end].text)
+        #print("Match found:", user[start:end].text)
+        station1 = user[start:end].text
+        print(station1)
+
+    matcher2 = Matcher(nlp.vocab)
+    toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE'}]
+    matcher2.add('to', [toStation])
+    matches2 = matcher2(user)
+
+    #print("matches found: ", len(matches2))
+    for match_id, start, end in matches2:
+        #print("Match found:", user[start:end].text)
+        station2 = user[start:end].text
+        print(station2)
 
     greeting(user)
     agree(user)
@@ -61,3 +75,4 @@ while(True):
         elif ent.label_ == "TIME":
             time = ent.text
             print("Time: ", time)
+
