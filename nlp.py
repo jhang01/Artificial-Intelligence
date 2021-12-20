@@ -26,53 +26,58 @@ def disagree(doc):
         if token.text.lower() in disagree_input:
             print(disagree_output)
 
-text = ('Ticket from a city to another city')
-doc = nlp(text)
+def lemmatizaion(doc):
+    for token in doc:
+        print(token, token.lemma_)
 
-while(True):
-    user = input()
-    user = nlp(user)
-    sentence = []
+def pos(doc):
+    for token in doc:
+        print(token, token.pos_)
 
-    matcher = Matcher(nlp.vocab)
-    fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE'}]
-    matcher.add('from', [fromStation])
-    matches = matcher(user)
+def getinfo():
+    while(True):
+        user = input()
+        user = nlp(user)
 
-    #print("matches found: ", len(matches))
-    for match_id, start, end in matches:
-        #print("Match found:", user[start:end].text)
-        station1 = user[start:end].text
-        print(station1)
+        lemmatizaion(user)
+        pos(user)
 
-    matcher2 = Matcher(nlp.vocab)
-    toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE'}]
-    matcher2.add('to', [toStation])
-    matches2 = matcher2(user)
+        # Not sure should the matcher be in the knowledge base or nlp
+        matcher = Matcher(nlp.vocab)
+        fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE'}]
+        matcher.add('from', [fromStation])
+        matches = matcher(user)
 
-    #print("matches found: ", len(matches2))
-    for match_id, start, end in matches2:
-        #print("Match found:", user[start:end].text)
-        station2 = user[start:end].text
-        print(station2)
+        for match_id, start, end in matches:
+            station1 = user[start:end].text
+            print(station1)
 
-    greeting(user)
-    agree(user)
-    disagree(user)
+        matcher2 = Matcher(nlp.vocab)
+        toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE'}]
+        matcher2.add('to', [toStation])
+        matches2 = matcher2(user)
 
-    if user.text.lower() == "bye" or user.text.lower() == "thank you":
-        break;
+        for match_id, start, end in matches2:
+            station2 = user[start:end].text
+            print(station2)
 
-    city = []
-    for ent in user.ents:
-        #print(ent.text, ent.label_)
-        if ent.label_ == "GPE":
-            city.append(ent.text)
-            print("City: ", city)
-        elif ent.label_ == "DATE":
-            date = ent.text
-            print("Date: ", date)
-        elif ent.label_ == "TIME":
-            time = ent.text
-            print("Time: ", time)
+        greeting(user)
+        agree(user)
+        disagree(user)
 
+        if user.text.lower() == "bye" or user.text.lower() == "thank you":
+            break;
+
+        for ent in user.ents:
+            if ent.label_ == "GPE":
+                city = ent.text
+                print("City: ", city)
+            elif ent.label_ == "DATE":
+                date = ent.text
+                print("Date: ", date)
+            elif ent.label_ == "TIME":
+                time = ent.text
+                print("Time: ", time)
+
+if __name__ == '__main__':
+    getinfo()
