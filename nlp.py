@@ -43,6 +43,7 @@ def getinfo():
         pos(user)
 
         # Not sure should the matcher be in the knowledge base or nlp
+        # To find the match 'from city' and 'to city' to know the departure and arrival station
         matcher = Matcher(nlp.vocab)
         fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE'}]
         matcher.add('from', [fromStation])
