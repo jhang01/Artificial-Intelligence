@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 class Ticket(object):
     url = str()
-
+    
     @staticmethod
     def get_ticket_single(fromStation, toStation, departDate, departTime):
         parsed_html = Ticket.request_page_single(fromStation, toStation, departDate, departTime)
@@ -66,5 +66,6 @@ class Ticket(object):
 
 if __name__ == '__main__':
     ticket = Ticket()
-    ticket.get_ticket_return("NRW", "CHM", "today", "1545", "tommorow", "1545")
-    print(ticket.get_ticket_return("NRW", "CHM", "today", "1545", "tomorrow", "1545"))
+    print(ticket.get_ticket_single("NRW", "CHM", "today", "1000"))
+    #ticket.get_ticket_return("NRW", "CHM", "today", "1545", "tommorow", "1545")
+    #print(ticket.get_ticket_return("NRW", "CHM", "today", "1545", "tomorrow", "1545"))

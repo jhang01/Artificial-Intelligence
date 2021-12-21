@@ -7,7 +7,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-        
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     </head>
     <body> 
@@ -15,15 +14,30 @@
         <div class="container"> <!--row placed within container for propper padding and alignment-->
             <div class="row"> <!--create horizontal group of columns-->
                 <div class="col-sm-6 offset-sm-3"> <!--grid layout-->
-                    <div id="chatbox" class="border border-success">
+                    <div id="chatbox">
                         <p class="botText"><span>Hello!</span></p>
                     </div>
                     <div id="userinput">
-                        <input id="textInput" class="form-control" type="text" name="msg" placeholder="type your message here">
-                        <input id="buttonInput" class="btn btn-success form-control" type="submit" value="send">
+                        <input id="textInput" class="form-control" type="text" name="msg" placeholder="type your message here" onkeypress="enterKeyPressed(event)">
+                        <input id="buttonInput" class="btn btn-success form-control" type="submit" value="send" onclick="getResponse()">
                     </div>
                 </div>
             </div>
         </div>
+
+        <script type="text/javascript">
+            function getResponse(){
+                let userText = document.getElementById("textInput").value;
+                document.getElementById("chatbox").innerHTML += '<p class ="userText"><span>' + userText + '</span></p>';
+                document.getElementById("userInput").scrollIntoView({block: "start", behavior: "smooth"})
+            }
+
+            function enterKeyPressed(event){
+                if(event.key === "Enter"){
+                    event.preventDefault();
+                    getResponse()
+                }
+            }
+        </script>
     </body>
 </html>

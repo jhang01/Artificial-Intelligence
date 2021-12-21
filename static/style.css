@@ -15,3 +15,16 @@ h1{
     padding: 10px;
     border-radius: 2px;
 }
+
+.userText{
+    color:white;
+    font-size: 17px;
+    text-align: right;
+    line-height: 30px;
+}
+
+.userText span{
+    background-color: greenyellow;
+    padding: 10px;
+    border-radius: 2px;
+}
