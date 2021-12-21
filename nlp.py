@@ -14,17 +14,17 @@ disagree_output = ("Could you please try rewording your message for me again?")
 def greeting(doc):
     for token in doc:
         if token.text.lower() in greeting_input:
-            print(greeting_output)
+            return(greeting_output)
 
 def agree(doc):
     for token in doc:
         if token.text.lower() in agree_input:
-            print(agree_output)
+            return(agree_output)
 
 def disagree(doc):
     for token in doc:
         if token.text.lower() in disagree_input:
-            print(disagree_output)
+            return(disagree_output)
 
 def lemmatizaion(doc):
     for token in doc:
@@ -62,9 +62,15 @@ def getinfo():
             station2 = user[start:end].text
             print(station2)
 
-        greeting(user)
-        agree(user)
-        disagree(user)
+        greet = greeting(user)
+        if (greet != None):
+            print(greet)
+        a = agree(user)
+        if (a != None):
+            print(a)
+        d = disagree(user)
+        if (d != None):
+            print(d)
 
         if user.text.lower() == "bye" or user.text.lower() == "thank you":
             break;
