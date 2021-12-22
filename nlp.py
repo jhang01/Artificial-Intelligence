@@ -34,33 +34,68 @@ def pos(doc):
     for token in doc:
         print(token, token.pos_)
 
-def getinfo():
-    while(True):
+def station(user):
+    station = []
+    for ent in user.ents:
+        if ent.label_ == 'GPE':
+            station.append(ent.text)
+    return station
+
+
+def getDate(user):
+    ticketDate = ""
+    for ent in user.ents:
+        if ent.label_ == "DATE":
+            ticketDate = ent.text
+    return ticketDate
+
+def getTime(user):
+    tickettime = ""
+    for ent in user.ents:
+        if ent.label_ == "TIME":
+            tickettime = ent.text
+    return tickettime
+
+
+def getcity(user):
+    station1 = None
+    station2 = None
+    # Not sure should the matcher be in the knowledge base or nlp
+    # To find the match 'from city' and 'to city' to know the departure and arrival station
+    matcher = Matcher(nlp.vocab)
+    fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE'}]
+    matcher.add('from', [fromStation])
+    matches = matcher(user)
+
+    for match_id, start, end in matches:
+        station1 = user[start:end].text
+
+    matcher2 = Matcher(nlp.vocab)
+    toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE'}]
+    matcher2.add('to', [toStation])
+    matches2 = matcher2(user)
+
+    for match_id, start, end in matches2:
+        station2 = user[start:end].text
+
+    if (station1 != None and station2 != None):
+        return station1, station2
+    elif(station1 == None):
+        return None, station2
+    elif(station2 == None):
+        return station1, None
+    else:
+        return None, None
+
+    return station1, station2
+
+if __name__ == '__main__':
+    while (True):
         user = input()
         user = nlp(user)
 
         lemmatizaion(user)
         pos(user)
-
-        # Not sure should the matcher be in the knowledge base or nlp
-        # To find the match 'from city' and 'to city' to know the departure and arrival station
-        matcher = Matcher(nlp.vocab)
-        fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE'}]
-        matcher.add('from', [fromStation])
-        matches = matcher(user)
-
-        for match_id, start, end in matches:
-            station1 = user[start:end].text
-            print(station1)
-
-        matcher2 = Matcher(nlp.vocab)
-        toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE'}]
-        matcher2.add('to', [toStation])
-        matches2 = matcher2(user)
-
-        for match_id, start, end in matches2:
-            station2 = user[start:end].text
-            print(station2)
 
         greet = greeting(user)
         if (greet != None):
@@ -68,23 +103,25 @@ def getinfo():
         a = agree(user)
         if (a != None):
             print(a)
-        d = disagree(user)
+        dis = disagree(user)
+        if (dis != None):
+            print(dis)
+
+        station1, station2 = getcity(user)
+        if (station1 != None):
+            print(station1)
+        if (station2 != None):
+            print(station2)
+
+        c = station(user)
+        if (c != None):
+            print(c)
+        d = getDate(user)
         if (d != None):
-            print(d)
+            print("Date: ", d)
+        t = getTime(user)
+        if (t != None):
+            print("Time: ", t)
 
         if user.text.lower() == "bye" or user.text.lower() == "thank you":
             break;
-
-        for ent in user.ents:
-            if ent.label_ == "GPE":
-                city = ent.text
-                print("City: ", city)
-            elif ent.label_ == "DATE":
-                date = ent.text
-                print("Date: ", date)
-            elif ent.label_ == "TIME":
-                time = ent.text
-                print("Time: ", time)
-
-if __name__ == '__main__':
-    getinfo()
