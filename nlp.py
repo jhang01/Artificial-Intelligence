@@ -78,15 +78,6 @@ def getcity(user):
     for match_id, start, end in matches2:
         station2 = user[start:end].text
 
-    if (station1 != None and station2 != None):
-        return station1, station2
-    elif(station1 == None):
-        return None, station2
-    elif(station2 == None):
-        return station1, None
-    else:
-        return None, None
-
     return station1, station2
 
 if __name__ == '__main__':
