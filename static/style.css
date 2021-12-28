@@ -1,19 +1,80 @@
 
-h1{
+
+header{
+    background-color: lightgrey;
     text-align: center;
+    margin-bottom: 100px;
+    color: white;
+    padding: 40px;
+}
+
+/*The message format with the profile picture*/
+.msg{
+    display: flex;
+    align-items: flex-end; /*Align items at the bottom of the container*/
+    margin-bottom: 10px;
+}
+
+/*profile picture*/
+.msg-img{ 
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+    background: #ddd;
+    background-position: center;
+    background-size: cover;
+    border-radius: 50%;
+    color: grey;
+}
+
+/*bot icon*/
+i{
+	font-size: 25px;
+	margin: 10px;
+}
+
+/*user icon*/
+.right-msg i{
+    margin: 13px;
+    font-size: 27px;
+}
+
+/*message bubble*/
+.msg-bubble{
+    max-width: 450px;
+    padding: 5px 15px;
+    border-radius: 15px;
+    background-color: #ececec;
+}
+
+/*stack items from right to left*/
+.right-msg{
+    flex-direction: row-reverse;
+}
+
+/*background colour of user*/
+.right-msg .msg-bubble{
+    background-color: #579ffb;
+    /*90 degree corner for bubble*/
+    border-bottom-right-radius: 0;
+}
+
+/*90 degree corner for bubble*/
+.left-msg .msg-bubble{
+    border-bottom-left-radius: 0;
+}
+
+/*Creates space between user message and user profile image*/
+.right-msg .msg-img{
+    margin-left: 10px;
 }
 
 .botText{
-    color:white;
+    color:black;
     font-size: 17px;
     text-align: left;
     line-height: 30px;
-}
-
-.botText span{
-    background-color:aqua;
-    padding: 10px;
-    border-radius: 2px;
+    margin-bottom: 5px; /* Default bottom margin is larger*/
 }
 
 .userText{
@@ -21,10 +82,21 @@ h1{
     font-size: 17px;
     text-align: right;
     line-height: 30px;
+    margin-bottom: 5px;
 }
 
-.userText span{
-    background-color: greenyellow;
-    padding: 10px;
-    border-radius: 2px;
+.userInput{
+    display: flex;
+}
+
+.userInput *{
+    margin: 10px;
+}
+
+/*the text input*/
+.textInputStyle{
+    padding: 12px 20px;
+    border-radius: 25px; /* curved borders */
+    width: 80%;
+    border: 1px solid #ccc; 
 }
