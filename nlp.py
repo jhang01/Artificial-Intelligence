@@ -82,6 +82,8 @@ def getcity(user):
 
 if __name__ == '__main__':
     while (True):
+        text = ('ticket from Norwich to London tomorrow at 13:45')
+
         user = input()
         user = nlp(user)
 
