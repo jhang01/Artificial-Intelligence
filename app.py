@@ -11,7 +11,6 @@ def index():
 @app.route("/get")
 def get_bot_response():
     userText = request.args.get('msg')
-    
     return userText
     
 
