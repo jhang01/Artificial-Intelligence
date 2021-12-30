@@ -1,0 +1,17 @@
+CREATE TABLE conversationdetails(
+    conversation_id serial PRIMARY KEY,
+    conversation VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE traindata(
+    train_id serial PRIMARY KEY,
+    train_data VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE trainstation(
+    station_id serial PRIMARY KEY,
+    station_name VARCHAR(50) UNIQUE NOT NULL,
+    abbreviations VARCHAR(50) UNIQUE NOT NULL
+)
+    
+   
