@@ -11,6 +11,9 @@ agree_output = ("Okay, let me check it for you.")
 disagree_input = ("no", "wrong", "n", "false")
 disagree_output = ("Could you please try rewording your message for me again?")
 
+thanks_input = ("thanks", "thank you", "ty", "bye")
+thanks_output = ("Happy to help!")
+
 def greeting(doc):
     for token in doc:
         if token.text.lower() in greeting_input:
@@ -25,6 +28,11 @@ def disagree(doc):
     for token in doc:
         if token.text.lower() in disagree_input:
             return(disagree_output)
+
+def thanks(doc):
+    for token in doc:
+        if token.text.lower() in thanks_input:
+            return(thanks_output)
 
 def lemmatizaion(doc):
     for token in doc:
@@ -99,6 +107,10 @@ if __name__ == '__main__':
         dis = disagree(user)
         if (dis != None):
             print(dis)
+        t = thanks(user)
+        if (t != None):
+            print(t)
+            break
 
         station1, station2 = getcity(user)
         if (station1 != None):
@@ -115,6 +127,3 @@ if __name__ == '__main__':
         t = getTime(user)
         if (t != None):
             print("Time: ", t)
-
-        if user.text.lower() == "bye" or user.text.lower() == "thank you":
-            break;
