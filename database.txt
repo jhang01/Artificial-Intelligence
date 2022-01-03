@@ -9,8 +9,7 @@ CREATE TABLE traindata(
 );
 
 CREATE TABLE trainstation(
-    station_id serial PRIMARY KEY,
-    station_name VARCHAR(50) UNIQUE NOT NULL,
+    station_name VARCHAR(50) PRIMARY KEY UNIQUE NOT NULL,
     abbreviations VARCHAR(50) UNIQUE NOT NULL
 )
 
