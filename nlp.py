@@ -1,5 +1,8 @@
+import re
+
 import spacy
 from spacy.matcher import Matcher
+
 nlp = spacy.load('en_core_web_lg')
 
 greeting_input = ("hey", "hi", "good morning", "good evening", "morning", "evening")
@@ -66,8 +69,8 @@ def getTime(user):
 
 
 def getcity(user):
-    station1 = None
-    station2 = None
+    departure = None
+    arrival = None
     # Not sure should the matcher be in the knowledge base or nlp
     # To find the match 'from city' and 'to city' to know the departure and arrival station
     matcher = Matcher(nlp.vocab)
@@ -76,7 +79,7 @@ def getcity(user):
     matches = matcher(user)
 
     for match_id, start, end in matches:
-        station1 = user[start:end].text
+        departure = user[start:end].text
 
     matcher2 = Matcher(nlp.vocab)
     toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE'}]
@@ -84,9 +87,9 @@ def getcity(user):
     matches2 = matcher2(user)
 
     for match_id, start, end in matches2:
-        station2 = user[start:end].text
+        arrival = user[start:end].text
 
-    return station1, station2
+    return departure, arrival
 
 if __name__ == '__main__':
     while (True):
@@ -110,11 +113,11 @@ if __name__ == '__main__':
             print(t)
             break
 
-        station1, station2 = getcity(user)
-        if (station1 != None):
-            print(station1)
-        if (station2 != None):
-            print(station2)
+        departure, arrival = getcity(user)
+        if (departure != None):
+            print(departure)
+        if (arrival != None):
+            print(arrival)
 
         c = station(user)
         if (c != None):
