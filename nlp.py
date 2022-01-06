@@ -91,10 +91,19 @@ def getcity(user):
 
     return departure, arrival
 
+def getSimilarity(rule, user):
+    similarity = rule.similarity(user)
+    return similarity
+
 if __name__ == '__main__':
     while (True):
         user = input()
         user = nlp(user)
+
+        rule = nlp("I want to buy a train ticket")
+
+        similarity = getSimilarity(rule, user)
+        print(similarity)
 
         lemmatizaion(user)
         pos(user)
