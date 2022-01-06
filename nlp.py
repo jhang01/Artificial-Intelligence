@@ -100,7 +100,7 @@ if __name__ == '__main__':
         user = input()
         user = nlp(user)
 
-        rule = nlp("I want to buy a train ticket")
+        rule = nlp("buy train ticket")
 
         similarity = getSimilarity(rule, user)
         print(similarity)
