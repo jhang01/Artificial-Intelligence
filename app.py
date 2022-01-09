@@ -4,6 +4,7 @@ import nlp
 import kb
 import psycopg2
 
+
 app = Flask(__name__)
 
 @app.route("/")
@@ -36,10 +37,9 @@ def get_bot_response():
 
 def what_to_respond():
     userText = request.args.get('msg')
-    if userText in nlp.greeting_input:
-        kb.process_entities('greeting')
-    else:
-        kb.response = ("Don't understand")
+    kb.process_entities(nlp.get_entities(userText))
+
 
 if __name__ == '__main__':
     app.run()
+    kb.process_entities({'reset': 'true'})

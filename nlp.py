@@ -6,7 +6,7 @@ from spacy.matcher import Matcher
 nlp = spacy.load('en_core_web_lg')
 
 greeting_input = ("hey", "hi", "good morning", "good evening", "morning", "evening")
-greeting_output = "Hello, how can I help you? :)"
+greeting_output = "Hello, please reply with the service you would like, reply: booking, ticket info or delays"
 
 agree_input = ("yes", "yea", "yeah", "yh", "y", "true")
 agree_output = ("Okay, let me check it for you.")
@@ -16,6 +16,8 @@ disagree_output = ("Could you please try rewording your message for me again?")
 
 thanks_input = ("thanks", "thank you", "ty", "bye")
 thanks_output = ("Happy to help!")
+
+services_input = ("booking", "ticket info", "delays")
 
 def greeting(doc):
     for token in doc:
@@ -94,6 +96,22 @@ def getcity(user):
 def getSimilarity(rule, user):
     similarity = rule.similarity(user)
     return similarity
+def get_entities(message):
+
+    message = nlp(message)
+
+    kbdictionary = {}
+    kbdictionary['service'] = 'chat'
+    if str(message) in greeting_input:
+        kbdictionary['greeting'] = 'true'
+
+    if str(message) in agree_input:
+        kbdictionary['answer'] = 'true'
+
+    if str(message) in disagree_input:
+        kbdictionary['answer'] = 'false'
+
+    return kbdictionary
 
 if __name__ == '__main__':
     while (True):

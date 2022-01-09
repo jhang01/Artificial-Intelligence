@@ -8,21 +8,20 @@ from web_scrapper import Ticket
 import nlp
 from random import choice
 import app
+import predicting_location
 
 global response
+
+
 def set_response(message):
     global response
     response = message
 
+
 class Booking(KnowledgeEngine):
-    def __init__(self):
-        super().__init__()
-        self.dictionary = None
-
-
-    '''
     @DefFacts()
     def _initial_action(self):
+        set_response('Can not comprehend')
         if 'reset' in self.dictionary:
             if self.dictionary.get('reset') == 'true':
                 self.knowledge = {}
@@ -79,19 +78,28 @@ class Booking(KnowledgeEngine):
             yield Fact(predictDelay=self.knowledge.get('predictDelay'))
         if 'informationGiven' in self.knowledge:
             yield Fact(informationGiven=self.knowledge.get('informationGiven'))
-    '''
 
     @Rule(salience=1)
     def message_greeting(self):
         if 'greeting' in self.dictionary:
-            #app.response = nlp.greeting_output
             set_response(nlp.greeting_output)
 
+    '''
+    @Rule(salience=2)
+    def message_service_selected(self):
+        if 'booking' in self.dictionary:
+            set_response("You have selected booking")
+        if 'ticket info' in self.dictionary:
+            set_response("You have selected ticket information")
+        if 'delays' in self.dictionary:
+            set_response("You have selected delays service")
+    '''
 
 
 # Initialize new booking
 engine = Booking()
 engine.knowledge = {}
+
 
 
 # Set dictionary and run knowledge engine
@@ -100,5 +108,7 @@ def process_entities(entities):
     engine.reset()
     engine.run()
 
+
 if __name__ == '__main__':
+    # print(predicting_location.predict_location("Norwich"))
     print()
