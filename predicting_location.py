@@ -2,9 +2,11 @@ from pandas import *
 import difflib
 import unittest
 
-guessed_station = False
+
 
 data = read_csv("stations.csv")
+
+citiesAbb = data['tiploc']
 
 cities = data['name'].tolist()
 
@@ -12,12 +14,24 @@ def predict_location(location):
     uppercase_location = location.upper()
     close_matches = difflib.get_close_matches(uppercase_location, cities, 1, 0.7)
     if uppercase_location in cities:
-        return uppercase_location
+        i = data.loc[data['name'] == uppercase_location].index[0]
+        cityAbb = citiesAbb[i]
+        guessed_station = False
+        #probably do not need guessed_station
+        return uppercase_location, cityAbb, guessed_station
     elif len(close_matches) > 0:
         guessed_station = True
-        return close_matches[0]
+        i = data.loc[data['name'] == close_matches[0]].index[0]
+        cityAbb = citiesAbb[i]
+        # add user confirm if station is correct
+        # probably do not need guessed_station
+        return close_matches[0], cityAbb, guessed_station
     else:
         return None
+
+
+
+
 
 class PredictLocationTest(unittest.TestCase):
 

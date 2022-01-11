@@ -1,15 +1,23 @@
+import re
+
 import spacy
 from spacy.matcher import Matcher
+
 nlp = spacy.load('en_core_web_lg')
 
 greeting_input = ("hey", "hi", "good morning", "good evening", "morning", "evening")
-greeting_output = "Hello, how can I help you? :)"
+greeting_output = "Hello, please reply with the service you would like, reply: booking, ticket info or delays"
 
 agree_input = ("yes", "yea", "yeah", "yh", "y", "true")
 agree_output = ("Okay, let me check it for you.")
 
 disagree_input = ("no", "wrong", "n", "false")
 disagree_output = ("Could you please try rewording your message for me again?")
+
+thanks_input = ("thanks", "thank you", "ty", "bye")
+thanks_output = ("Happy to help!")
+
+services_input = ("booking", "ticket info", "delays")
 
 def greeting(doc):
     for token in doc:
@@ -25,6 +33,11 @@ def disagree(doc):
     for token in doc:
         if token.text.lower() in disagree_input:
             return(disagree_output)
+
+def thanks(doc):
+    for token in doc:
+        if token.text.lower() in thanks_input:
+            return(thanks_output)
 
 def lemmatizaion(doc):
     for token in doc:
@@ -58,8 +71,8 @@ def getTime(user):
 
 
 def getcity(user):
-    station1 = None
-    station2 = None
+    departure = None
+    arrival = None
     # Not sure should the matcher be in the knowledge base or nlp
     # To find the match 'from city' and 'to city' to know the departure and arrival station
     matcher = Matcher(nlp.vocab)
@@ -68,7 +81,7 @@ def getcity(user):
     matches = matcher(user)
 
     for match_id, start, end in matches:
-        station1 = user[start:end].text
+        departure = user[start:end].text
 
     matcher2 = Matcher(nlp.vocab)
     toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE'}]
@@ -76,16 +89,39 @@ def getcity(user):
     matches2 = matcher2(user)
 
     for match_id, start, end in matches2:
-        station2 = user[start:end].text
+        arrival = user[start:end].text
 
-    return station1, station2
+    return departure, arrival
+
+def getSimilarity(rule, user):
+    similarity = rule.similarity(user)
+    return similarity
+def get_entities(message):
+
+    message = nlp(message)
+
+    kbdictionary = {}
+    kbdictionary['service'] = 'chat'
+    if str(message) in greeting_input:
+        kbdictionary['greeting'] = 'true'
+
+    if str(message) in agree_input:
+        kbdictionary['answer'] = 'true'
+
+    if str(message) in disagree_input:
+        kbdictionary['answer'] = 'false'
+
+    return kbdictionary
 
 if __name__ == '__main__':
     while (True):
-        text = ('ticket from Norwich to London tomorrow at 13:45')
-
         user = input()
         user = nlp(user)
+
+        rule = nlp("buy train ticket")
+
+        similarity = getSimilarity(rule, user)
+        print(similarity)
 
         lemmatizaion(user)
         pos(user)
@@ -99,12 +135,16 @@ if __name__ == '__main__':
         dis = disagree(user)
         if (dis != None):
             print(dis)
+        t = thanks(user)
+        if (t != None):
+            print(t)
+            break
 
-        station1, station2 = getcity(user)
-        if (station1 != None):
-            print(station1)
-        if (station2 != None):
-            print(station2)
+        departure, arrival = getcity(user)
+        if (departure != None):
+            print(departure)
+        if (arrival != None):
+            print(arrival)
 
         c = station(user)
         if (c != None):
@@ -115,6 +155,3 @@ if __name__ == '__main__':
         t = getTime(user)
         if (t != None):
             print("Time: ", t)
-
-        if user.text.lower() == "bye" or user.text.lower() == "thank you":
-            break;
