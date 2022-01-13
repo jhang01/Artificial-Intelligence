@@ -1,5 +1,3 @@
-import re
-
 import spacy
 from spacy.matcher import Matcher
 
@@ -56,19 +54,43 @@ def station(user):
 
 
 def getDate(user):
-    ticketDate = ""
+    # Reference from : https://stackoverflow.com/questions/67113389/spacy-matcher-date-pattern-will-match-hyphens-but-not-forward-slashes
+    ticketDate = None
+
     for ent in user.ents:
         if ent.label_ == "DATE":
             ticketDate = ent.text
+        else:
+            matcher = Matcher(nlp.vocab)
+            date1 = [{'TEXT': {'REGEX': r'^\d{1,2}/\d{1,2}/\d{2}(?:\d{2})?$'}}]
+            date2 = [{'IS_DIGIT': True}, {'ORTH': '-'}, {'IS_DIGIT': True}, {'ORTH': '-'}, {'IS_DIGIT': True}]
+            date3 = [{'TEXT': {'REGEX': r'^\d{1,2}.\d{1,2}.\d{2}(?:\d{2})?$'}}]
+
+            matcher.add('date1', [date1])
+            matcher.add('date2', [date2])
+            matcher.add('date3', [date3])
+            matches = matcher(user)
+
+            for match_id, start, end in matches:
+                ticketDate = user[start:end].text
+
     return ticketDate
 
+
 def getTime(user):
-    tickettime = ""
+    tickettime = None
     for ent in user.ents:
         if ent.label_ == "TIME":
             tickettime = ent.text
-    return tickettime
+        else:
+            matcher = Matcher(nlp.vocab)
+            time = [{'IS_DIGIT': True}, {'ORTH': ':'}, {'IS_DIGIT': True}]
+            matcher.add('time', [time])
+            matches = matcher(user)
 
+            for match_id, start, end in matches:
+                tickettime = user[start:end].text
+    return tickettime
 
 def getcity(user):
     departure = None
@@ -96,8 +118,8 @@ def getcity(user):
 def getSimilarity(rule, user):
     similarity = rule.similarity(user)
     return similarity
-def get_entities(message):
 
+def get_entities(message):
     message = nlp(message)
 
     kbdictionary = {}
