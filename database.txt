@@ -65,3 +65,5 @@ CREATE TABLE weather(
   description char(255),
   icon char(50), 
   stations char(255));
+
+--To add the data into the database table, right click on the table created in the schema and choose --import\export. In Options, change export to import. In file info section, choose the file you need --and change the file format to csv. In miscellaneous section, turn the header to yes and choose ',' --as the delimiter
