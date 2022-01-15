@@ -30,15 +30,32 @@
                     <div class="userinput">
                         <input id="textInput" class="textInputStyle" type="text" name="msg" placeholder="Chat with bot here" onkeypress="enterKeyPressed(event)">
                         <input id="buttonInput" class='fas' style='font-size:24px; border-radius:50%; width: 50px;
-                        height: 50px; border: 1px solid #ccc;' type="submit" value="&#xf054;" onclick="getResponse()">
+                        height: 50px; border: 1px solid #ccc;' type="submit" value="&#xf054;" onclick="enteredText()">
                     </div>
                 </div>
             </div>
         </div>
 
         <script>
-            function getResponse(){
+            
+            
+            // executed when website finish loading
+            window.onload = async function exampleFunction() { 
+                let userTexts = ['bye', 'hi', 'cya']
+                userTexts.forEach(async (item) => {
+                    await getResponse(item);
+                })
+                
+                
+            }
+            
+            // executed when pressing the button
+            function enteredText(){
                 let userText = document.getElementById("textInput").value;
+                getResponse(userText);
+            }
+
+            function getResponse(text){
                 document.getElementById("chatbox").innerHTML += 
                 `
                 <div class="msg right-msg">
@@ -46,13 +63,13 @@
                         <i class="far fa-user"></i>
                     </div>
                     <div class="msg-bubble">
-                        <p class ="userText">${userText}</p>
+                        <p class ="userText">${text}</p>
                     </div>
                 </div>
                 `;
 
                 document.getElementById("textInput").value = "";
-                $.get("/get", { msg: userText }, function(data){
+                $.get("/get", { msg: text }, function(data){
                     document.getElementById("chatbox").innerHTML += 
                     `
                     <div class="msg left-msg">
@@ -67,10 +84,11 @@
                 });
             }
 
+            // executed when pressing enter
             function enterKeyPressed(event){
                 if(event.key === "Enter"){
                     event.preventDefault();
-                    getResponse()
+                    enteredText()
                 }
             }
         </script>

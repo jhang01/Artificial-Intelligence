@@ -8,8 +8,13 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPRegressor
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.svm import SVR
-from sklearn import metrics
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import SGDRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import f_regression
+from sklearn.feature_selection import mutual_info_regression
+from sklearn.svm import LinearSVR
 from math import sin, sqrt
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,17 +30,29 @@ import ssl
 conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow',host='127.0.0.1', port='5432')
 # Create a cursor
 cursor = conn.cursor()
-# Execute the command
-cursor.execute('SELECT * FROM trainperformance')
-# Get all the row in traindata
-data = cursor.fetchall()
+
+cursor.execute('SELECT * FROM trainperformance2018')
+
+data = cursor.fetchall() # Get all the row in traindata
+
+cursor.execute('SELECT * FROM weather2018')
+
+weatherdata = cursor.fetchall()
+
+cursor.execute('SELECT * FROM singletrainperformance')
+
+singledata = cursor.fetchall()
 
 df = pd.DataFrame(data, columns=['rid', 'tpl', 'pta', 'ptd', 'wta', 'wtp', 'wtd', 'arr_et', 'arr_wet', 'arr_atRemoved',	'pass_et', 'pass_wet', 'pass_atRemoved', 'dep_et', 'dep_wet', 'dep_atRemoved', 'arr_at', 'pass_at', 'dep_at', 'cr_code', 'lr_code'])
+
+weymouth_weather_df = pd.DataFrame(weatherdata, columns=['name', 'datetime', 'tempmax',	'tempmin',	'temp',	'feelslikemax',	'feelslikemin',	'feelslike', 'dew',	'humidity',	'precip', 'precipprob',	'precipcover',	'preciptype', 'snow', 'snowdepth', 'windgust', 'windspeed',	'winddir', 'sealevelpressure', 'cloudcover', 'visibility',	'solarradiation', 'solarenergy', 'uvindex', 'severerisk', 'sunrise', 'sunset', 'moonphase', 'conditions', 'description', 'icon', 'stations'])
+
+
 # Close connection
 df['rid'] = df['rid'].astype('str')
 conn.close()
 
-weymouth_weather_df = pd.read_csv('weymouth_weathers.csv')
+#weymouth_weather_df = pd.read_csv('southampton_weather_2017_days.csv')
 
 single_performance_df = pd.read_csv('single_train_performance.csv')
 
@@ -83,54 +100,57 @@ def calculate_arrival_time(begin_station, destination_station, left_time_string,
     estimate_time = left_time_date + timedelta(minutes=mins + delay_amount)
 
     ssl._create_default_https_context = ssl._create_unverified_context
-    response = urllib.request.urlopen('https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/weymouth/today?unitGroup=metric&key=LDM4JXNEB4J6RUS6N28ZDAWLM&contentType=json')
+    response = urllib.request.urlopen('https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/southampton/today?unitGroup=metric&key=LDM4JXNEB4J6RUS6N28ZDAWLM&contentType=json')
     data = response.read()
     weatherData = json.loads(data.decode('utf-8'))
     current_temp = weatherData['days'][0]['temp']
     current_precip = weatherData['days'][0]['precip']
     current_condition = icon_to_number(weatherData['days'][0]['icon'])
-    current_weekday = is_weekend(date.today().weekday())
+    current_snowdepth = weatherData['days'][0]['snowdepth']
+    current_season = check_autumn(datetime.now().strftime('%m'))
 
     predicted_delay = 0
 
     for i in range(from_index, to_index + 1):
         left_time_date = left_time_date + timedelta(minutes=time_difference_df.loc[i]['Minutes'])
-        current_offtime = is_off_time(str(left_time_date.time()))
-        scaled = scaler.transform([[current_temp, current_precip, current_condition, current_offtime, current_weekday]])
+        current_offtime = is_off_time(str(left_time_date.time()), date.today().weekday())
+        scaled = scaler.transform([[current_temp, current_precip, current_condition, current_snowdepth, current_offtime, current_season]])
+        # print(str(current_temp) + " " + str(current_precip) + " " + str(current_condition) + " " + str(current_snowdepth) + " " + str(current_offtime) + " " + str(current_season))
         print(int(prediction_model.predict(scaled)))
         predicted_delay = prediction_model.predict(scaled)
     
     estimate_time = estimate_time + timedelta(minutes=int(predicted_delay[0])) 
     print(estimate_time)
 
-def is_off_time(time):
+def is_off_time(time, day):
     time = time.strip().zfill(5)
-    if ((time > '09:30') and (time < '16:00')) or time > '19:00':
+    if (((time > '09:30') and (time < '16:00')) or time > '19:00') or is_weekend(day):
         return True
     else:
         return False
 
-def get_time(row):
+def get_time(row, day):
     for column in row:
         if isinstance(column, str) and (len(column) == 5 or len(column) == 4):
-            return is_off_time(column)
+            return is_off_time(column, day)
 
 
 
 def off_peak_times():
-    df['offpeak'] = df.apply(lambda row: get_time(row), axis=1)
+    df['offpeak'] = df.apply(lambda row: get_time(row, datetime.strptime(row['rid'][slice(0,8)], '%Y%m%d').weekday()), axis=1)
 
 def check_autumn(number):
     if  number == '09' or number == '10' or number == '11':
         return 1 #Autumn
+    elif number == '12' or number == '01' or number == '02':
+        return 2
+    elif number == '03' or number == '04' or number == '05':
+        return 3
     else:
-        return 2 #Other
+        return 4
 
 def seasons():
     df['is_autumn'] = df.apply(lambda row : check_autumn(row['rid'][slice(4,6)]), axis=1)
-
-def day_of_week():
-    df['isweekend'] = df.apply(lambda row : is_weekend(datetime.strptime(row['rid'][slice(0,8)], '%Y%m%d').weekday()), axis=1)
 
 def is_weekend(day):
     if day > 4:
@@ -182,10 +202,13 @@ def weather():
     df['condition'] = df.apply(lambda row : get_icon(datetime.strptime(row['rid'][slice(0,8)], '%Y%m%d').strftime('%Y-%m-%d')), axis=1)
     df['snowdepth'] = df.apply(lambda row : get_snow(datetime.strptime(row['rid'][slice(0,8)], '%Y%m%d').strftime('%Y-%m-%d')), axis=1)
 
+# temperature to check if cold temperature or not
 def get_temperature(date):
     date_temperature_df = weymouth_weather_df[weymouth_weather_df['datetime'] == date]
-    return date_temperature_df.values[0][4]
+    temperature = date_temperature_df.values[0][4]
+    return temperature
 
+# check if rain to if hard rain
 def get_precipitation(date):
     date_precip_df = weymouth_weather_df[weymouth_weather_df['datetime'] == date]
     return date_precip_df.values[0][10]
@@ -212,7 +235,8 @@ def icon_to_number(icon):
 
 def get_icon(date):
     date_icon_df = weymouth_weather_df[weymouth_weather_df['datetime'] == date]
-    icon = date_icon_df.values[0][31]
+    
+    icon = date_icon_df.values[0][31].strip()
     return icon_to_number(icon)
 
 def get_snow(date):
@@ -242,7 +266,7 @@ def knn(x_train, y_train, x_test, y_test):
     train_accuracy = np.empty(len(neighbors))
     test_accuracy = np.empty(len(neighbors))
     for i, k in enumerate(neighbors):
-        knn = KNeighborsRegressor(n_neighbors=k)
+        knn = KNeighborsRegressor(n_neighbors=k, weights='distance')
         knn.fit(x_train, y_train)
 
         train_accuracy[i] = knn.score(x_train, y_train)
@@ -257,47 +281,53 @@ def knn(x_train, y_train, x_test, y_test):
     plt.show()
     return knn
 
+# Takes an awful long time !!!! and negative r squared
 def svregression(x_train, y_train, x_test, y_test):
-    svr = SVR()
+    svr = LinearSVR()
     svr.fit(x_train, y_train)
     y_guess = svr.predict(x_test)
     print(sqrt(mean_squared_error(y_test, y_guess)), r2_score(y_test, y_guess))
     return svr
 
-#def sgdregression(x_train, y_train, x_test, y_test):
-
+def rand_forest(x_train, y_train, x_test, y_test):
+    regressor = RandomForestRegressor(n_estimators=100, random_state=0)
+    regressor.fit(x_train, y_train)
+    y_guess = regressor.predict(x_test)
+    print(sqrt(mean_squared_error(y_test, y_guess)), r2_score(y_test, y_guess))
+    return regressor
 
 
 if __name__ == '__main__':
     
     weather()
-
     off_peak_times()
     seasons()
-    day_of_week()
 
-    
     df['arrival_diff'] = df.apply(lambda row : (datetime.strptime((row['arr_at']).strip(), '%H:%M') - datetime.strptime((row['pta']).strip(), '%H:%M')).total_seconds()/60  if row['arr_at'] != None and row['pta'] != None else None, axis=1)
     print(df.info())
 
     filtered_df = df[df['arr_at'].notnull() & df['pta'].notnull()]
-    print(filtered_df.iloc[:,28])
+    print(filtered_df.iloc[:,27])
 
-    Y = filtered_df.iloc[:,28]
+    Y = filtered_df.iloc[:,27]
 
-    X = filtered_df.iloc[:,[21,22,23,24,25,26,27]]
+    X = filtered_df.iloc[:,[21,22,23,24,25,26]]
+    
     print(X)
     scaler = StandardScaler()
     scaler.fit(X)
 
-    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y, test_size=0.4, random_state=1)
+    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y, test_size=0.3, random_state=1)
 
     Xtrain = scaler.transform(Xtrain)
     Xtest = scaler.transform(Xtest)
-
-    prediction_model = svregression(Xtrain, Ytrain, Xtest, Ytest)
+    
+    prediction_model = knn(Xtrain, Ytrain, Xtest, Ytest)
     """
     a = estimate_time_difference()
     calculate_arrival_time('WDON', 'VAUXHLM', '8:00', 10, a, prediction_model)
     """
+    
+    
+    
     
