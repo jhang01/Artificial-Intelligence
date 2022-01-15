@@ -37,18 +37,19 @@
         </div>
 
         <script>
-            
-            
+
+
             // executed when website finish loading
-            window.onload = async function exampleFunction() { 
+            /*
+            window.onload = async function exampleFunction() {
                 let userTexts = ['bye', 'hi', 'cya']
                 userTexts.forEach(async (item) => {
                     await getResponse(item);
                 })
-                
-                
             }
-            
+
+             */
+
             // executed when pressing the button
             function enteredText(){
                 let userText = document.getElementById("textInput").value;
@@ -56,7 +57,7 @@
             }
 
             function getResponse(text){
-                document.getElementById("chatbox").innerHTML += 
+                document.getElementById("chatbox").innerHTML +=
                 `
                 <div class="msg right-msg">
                     <div class="msg-img">
@@ -67,7 +68,6 @@
                     </div>
                 </div>
                 `;
-
                 document.getElementById("textInput").value = "";
                 $.get("/get", { msg: text }, function(data){
                     document.getElementById("chatbox").innerHTML += 
@@ -91,6 +91,8 @@
                     enteredText()
                 }
             }
+
+
         </script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     </body>

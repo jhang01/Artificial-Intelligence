@@ -1,10 +1,12 @@
 import spacy
 from spacy.matcher import Matcher
+import predicting_location
 
 nlp = spacy.load('en_core_web_lg')
 
-greeting_input = ("hey", "hi", "good morning", "good evening", "morning", "evening")
-greeting_output = "Hello, please reply with the service you would like, reply: booking, ticket info or delays"
+greeting_input = ("hey", "hi", "good morning", "good evening", "morning", "evening", "hello")
+greeting_output = "Hello, please could you provide us with a username, if you do not have one please reply with a " \
+                  "desired username. "
 
 agree_input = ("yes", "yea", "yeah", "yh", "y", "true")
 agree_output = ("Okay, let me check it for you.")
@@ -17,33 +19,40 @@ thanks_output = ("Happy to help!")
 
 services_input = ("booking", "ticket info", "delays")
 
+
 def greeting(doc):
     for token in doc:
         if token.text.lower() in greeting_input:
-            return(greeting_output)
+            return (greeting_output)
+
 
 def agree(doc):
     for token in doc:
         if token.text.lower() in agree_input:
-            return(agree_output)
+            return (agree_output)
+
 
 def disagree(doc):
     for token in doc:
         if token.text.lower() in disagree_input:
-            return(disagree_output)
+            return (disagree_output)
+
 
 def thanks(doc):
     for token in doc:
         if token.text.lower() in thanks_input:
-            return(thanks_output)
+            return (thanks_output)
+
 
 def lemmatizaion(doc):
     for token in doc:
         print(token, token.lemma_)
 
+
 def pos(doc):
     for token in doc:
         print(token, token.pos_)
+
 
 def station(user):
     station = []
@@ -115,15 +124,20 @@ def getcity(user):
 
     return departure, arrival
 
+
 def getSimilarity(rule, user):
     similarity = rule.similarity(user)
     return similarity
 
+
+
 def get_entities(message):
+    message = message.lower()
     message = nlp(message)
 
     kbdictionary = {}
     kbdictionary['service'] = 'chat'
+
     if str(message) in greeting_input:
         kbdictionary['greeting'] = 'true'
 
@@ -133,7 +147,74 @@ def get_entities(message):
     if str(message) in disagree_input:
         kbdictionary['answer'] = 'false'
 
+    hasName = False
+    for entity in message.ents:
+        if entity.label_ == 'PERSON':
+            kbdictionary['name'] = entity.text
+            hasName = True
+    if not hasName and len(str(message).split()) == 1 and not ('greeting' in kbdictionary):
+        kbdictionary['name'] = str(message)
+
+
+    locations = []
+    locations_abbreviation = []
+    fromStation, toStation = getcity(message)
+
+    if fromStation:
+        fromStation = fromStation[5:]
+        station_name, station_abbreviation, guessed = predicting_location.predict_location(str(fromStation))
+        locations.append(station_name)
+        locations_abbreviation.append(station_abbreviation)
+        if guessed:
+            kbdictionary['guessedFrom'] = 'true'
+        else:
+            kbdictionary['guessedFrom'] = 'false'
+
+    if toStation:
+        toStation = toStation[3:]
+        station_name, station_abbreviation, guessed = predicting_location.predict_location(str(toStation))
+        locations.append(station_name)
+        locations_abbreviation.append(station_abbreviation)
+        if guessed:
+            kbdictionary['guessedTo'] = 'true'
+        else:
+            kbdictionary['guessedTo'] = 'false'
+
+    if len(locations) > 0:
+        kbdictionary['location'] = locations
+        kbdictionary['station_abbreviation'] = locations_abbreviation
+
+    dates = []
+    times = []
+
+    for entity in message.ents:
+        if entity.label_ == 'DATE':
+            dates.append(entity)
+        if entity.label_ == 'TIME':
+            times.append(entity)
+
+    if len(dates) > 0:
+        kbdictionary['dates'] = dates
+    if len(times) > 0:
+        kbdictionary['times'] = times
+
+    # Service/Is Return
+    for token in message:
+        token = str(token).lower()
+
+        if token in {'predict', 'prediction', 'delay', 'delays'}:
+            kbdictionary['service'] = 'predict'
+
+        if token in {'travel', 'travels', 'book', 'booking', 'bookings'}:
+            kbdictionary['service'] = 'book'
+
+        if token in {'return', 'returns'}:
+            kbdictionary['return'] = 'true'
+
+    print(kbdictionary)
+
     return kbdictionary
+
 
 if __name__ == '__main__':
     while (True):
