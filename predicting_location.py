@@ -27,7 +27,9 @@ def predict_location(location):
         # probably do not need guessed_station
         return close_matches[0], cityAbb, guessed_station
     else:
-        return None, None, None
+        return None
+
+
 
 
 

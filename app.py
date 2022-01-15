@@ -4,19 +4,17 @@ import nlp
 import kb
 import psycopg2
 
+
 app = Flask(__name__)
-global error
 
 @app.route("/")
 def index():
     return render_template('index.html')
 
-
 @app.route("/get")
 def get_bot_response():
     what_to_respond()
     response = kb.response
-    '''
     # Reference from: https://pynative.com/python-postgresql-insert-update-delete-table-data-to-perform-crud-operations/
     try:
         userText = request.args.get('msg')
@@ -35,16 +33,11 @@ def get_bot_response():
             cursor.close()
             conn.close()
             print("Database connection close")
-            '''
     return response
-
 
 def what_to_respond():
     userText = request.args.get('msg')
-    kb.set_user_message(userText)
     kb.process_entities(nlp.get_entities(userText))
-
-
 
 
 if __name__ == '__main__':
