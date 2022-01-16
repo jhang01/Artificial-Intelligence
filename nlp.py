@@ -1,11 +1,16 @@
+import dateparser
+import dateutil
+from dateutil import parser
 import spacy
 from spacy.matcher import Matcher
 import predicting_location
+from datetime import datetime
+
 
 nlp = spacy.load('en_core_web_lg')
 
 greeting_input = ("hey", "hi", "good morning", "good evening", "morning", "evening", "hello")
-greeting_output = "Hello, please could you provide us with a username, if you do not have one please reply with a " \
+greeting_output = "Please could you provide us with a username, if you do not have one please reply with a " \
                   "desired username. "
 
 agree_input = ("yes", "yea", "yeah", "yh", "y", "true")
@@ -68,7 +73,8 @@ def getDate(user):
 
     for ent in user.ents:
         if ent.label_ == "DATE":
-            ticketDate = ent.text
+            ticketDate = dateparser.parse(ent.text,  settings={'DATE_ORDER': 'DMY'}, languages=['en']) # uk chatbot so use DMY
+            #ticketDate = str(ticketDate.day).zfill(2) + str(ticketDate.month).zfill(2) + (str(ticketDate.year)[2:])
         else:
             matcher = Matcher(nlp.vocab)
             date1 = [{'TEXT': {'REGEX': r'^\d{1,2}/\d{1,2}/\d{2}(?:\d{2})?$'}}]
@@ -82,15 +88,16 @@ def getDate(user):
 
             for match_id, start, end in matches:
                 ticketDate = user[start:end].text
+                ticketDate = datetime.strptime(ticketDate, "%d/%m/%Y")
 
     return ticketDate
 
 
 def getTime(user):
-    tickettime = None
+    ticket_time = None
     for ent in user.ents:
         if ent.label_ == "TIME":
-            tickettime = ent.text
+            ticket_time = dateparser.parse(ent.text, settings={'PREFER_DATES_FROM': 'future'})
         else:
             matcher = Matcher(nlp.vocab)
             time = [{'IS_DIGIT': True}, {'ORTH': ':'}, {'IS_DIGIT': True}]
@@ -98,8 +105,10 @@ def getTime(user):
             matches = matcher(user)
 
             for match_id, start, end in matches:
-                tickettime = user[start:end].text
-    return tickettime
+                ticket_time = user[start:end].text
+                ticket_time = datetime.combine(datetime.today(), ticket_time)
+
+    return ticket_time
 
 def getcity(user):
     departure = None
@@ -187,11 +196,10 @@ def get_entities(message):
     dates = []
     times = []
 
-    for entity in message.ents:
-        if entity.label_ == 'DATE':
-            dates.append(entity)
-        if entity.label_ == 'TIME':
-            times.append(entity)
+    if getDate(message) is not None:
+        dates.append(getDate(message))
+    if getTime(message) is not None:
+        times.append(getTime(message))
 
     if len(dates) > 0:
         kbdictionary['dates'] = dates

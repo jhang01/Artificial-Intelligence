@@ -1,6 +1,7 @@
 import requests, json
 from bs4 import BeautifulSoup
 
+
 class Ticket(object):
     url = str()
     
@@ -59,7 +60,6 @@ class Ticket(object):
                 ticket['ticketPrice'] = info['singleJsonFareBreakdowns'][0]['ticketPrice']
 
             return ticket
-
         except:
 
             return False

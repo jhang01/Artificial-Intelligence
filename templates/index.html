@@ -50,12 +50,13 @@
 
              */
 
+
+
             // executed when pressing the button
             function enteredText(){
                 let userText = document.getElementById("textInput").value;
                 getResponse(userText);
             }
-
             function getResponse(text){
                 document.getElementById("chatbox").innerHTML +=
                 `
@@ -69,8 +70,20 @@
                 </div>
                 `;
                 document.getElementById("textInput").value = "";
-                $.get("/get", { msg: text }, function(data){
-                    document.getElementById("chatbox").innerHTML += 
+                $.get("/get", { msg: text }, async function(data) {
+                    let list = data.split("@/")
+                    list.forEach(async (item) => {
+                        if (item !== "") {
+                            await chat_bot_response(item);
+                        }
+                    })
+                })
+            }
+
+
+
+            function chat_bot_response(data){
+                document.getElementById("chatbox").innerHTML +=
                     `
                     <div class="msg left-msg">
                         <div class="msg-img">
@@ -81,7 +94,6 @@
                         </div>
                     </div>
                     `;
-                });
             }
 
             // executed when pressing enter

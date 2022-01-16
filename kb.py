@@ -11,12 +11,13 @@ import app
 import predicting_location
 
 global response
-global user_message
 
+global error_response
+global user_message
 
 def set_response(message):
     global response
-    response = message
+    response = response + "@/" + message
 
 
 def set_user_message(message):
@@ -27,7 +28,8 @@ def set_user_message(message):
 class Booking(KnowledgeEngine):
     @DefFacts()
     def _initial_action(self):
-        set_response('Can not comprehend')  # set initial response
+        global response
+        response = ""
         if 'reset' in self.dictionary:  # if the dictionary contains reset
             if self.dictionary.get('reset') == 'true':
                 self.knowledge = {}
@@ -61,6 +63,14 @@ class Booking(KnowledgeEngine):
         if 'toLocation' in self.knowledge:
             print(self.knowledge.get('toLocation'))
             yield Fact(toLocation=self.knowledge.get('toLocation'))
+
+        if 'fromLocationAbb' in self.knowledge:
+            print(self.knowledge.get('fromLocationAbb'))
+            yield Fact(fromLocationAbb=self.knowledge.get('fromLocationAbb'))
+        if 'toLocationAbb' in self.knowledge:
+            print(self.knowledge.get('toLocationAbb'))
+            yield Fact(toLocationAbb=self.knowledge.get('toLocationAbb'))
+
 
         if 'departDate' in self.knowledge:
             print(self.knowledge.get('departDate'))
@@ -104,7 +114,7 @@ class Booking(KnowledgeEngine):
     @Rule(salience=100)  # higher number priority
     def message_greeting(self):
         if 'greeting' in self.dictionary:
-            set_response(nlp.greeting_output)
+            set_response("Hi :)")
 
     # Ask Name
     @Rule(Fact(service='chat'),
@@ -120,7 +130,7 @@ class Booking(KnowledgeEngine):
                 set_response("We could not find user: " + user_message + "please provide us with your username")
             else:
                 self.knowledge['question'] = 'ask_name'
-                set_response(nlp.greeting_output)
+            set_response(nlp.greeting_output)
 
     # Ask Service
     @Rule(Fact(service='chat'),
@@ -132,7 +142,7 @@ class Booking(KnowledgeEngine):
                                                                                            "like?")
         else:
             self.knowledge['question'] = 'ask_if_booking'
-            set_response("Which service would you like? Available services: booking, ticket information, train delay "
+        set_response("Which service would you like? Available services: booking, ticket information, train delay "
                          "information")
 
     # Ask Location
@@ -145,16 +155,25 @@ class Booking(KnowledgeEngine):
         error = False
         if 'location' in self.dictionary and len(self.dictionary.get('location')) > 1:
             location = self.dictionary.get('location')
+            station_abbreviation = self.dictionary.get('station_abbreviation')
+            print(station_abbreviation)
+            self.declare(Fact(fromLocationAbb=station_abbreviation[0]))
+            self.knowledge['fromLocationAbb'] = station_abbreviation[0]
+            self.declare(Fact(toLocationAbb=station_abbreviation[1]))
+            self.knowledge['toLocationAbb'] = station_abbreviation[1]
+
             self.declare(Fact(fromLocation=location[0]))
             self.knowledge['fromLocation'] = location[0]
             self.declare(Fact(toLocation=location[1]))
             self.knowledge['toLocation'] = location[1]
         else:
             if self.knowledge['question'] == 'ask_location':
-                set_response("Sorry I did not understand where " + user_message + " is. Please enter a valid station")
+                set_response("Sorry I did not understand: " + user_message + ". Please specify where you would like to travel from and to"
+                                                                             ", for example 'from london liverpool street to cambridge'")
+
             else:
                 self.knowledge['question'] = 'ask_location'
-                set_response("Please specify where you would like to travel from and to")
+            set_response("Please specify where you would like to travel from and to")
             self.declare(Fact(isQuestion=True))
 
     # Ask Depart Date
@@ -167,15 +186,16 @@ class Booking(KnowledgeEngine):
         error = False
         if 'dates' in self.dictionary:
             departDate = self.dictionary.get('dates')[0]
-            if dateutil.parser.parse(departDate) < datetime.now():
+            if departDate.day < datetime.today().day and departDate.month < datetime.today().month and departDate.year < datetime.today().year:
                 set_response("Sorry you have entered a time in the past")
                 error = True
             else:
-                self.declare(Fact(departDate=departDate))
-                self.knowledge['departDate'] = departDate
+                toDate = str(departDate.day).zfill(2) + str(departDate.month).zfill(2) + (str(departDate.year)[2:])
+                self.declare(Fact(departDate=toDate))
+                self.knowledge['departDate'] = toDate
 
         if self.knowledge['question'] == 'ask_depart_date' and departDate == 'false' and not error:
-            set_response("Response")
+            set_response("Please provide a valid date")
         else:
             self.knowledge['question'] = 'ask_depart_date'
 
@@ -191,15 +211,16 @@ class Booking(KnowledgeEngine):
     def ask_depart_time(self):
         if 'times' in self.dictionary:
             departTime = self.dictionary.get('times')
-            self.declare(Fact(departTime=departTime[0]))
-            self.knowledge['departTime'] = departTime[0]
+            toTime = str(departTime[0].hour).zfill(2) + str(departTime[0].minute).zfill(2)
+            self.declare(Fact(departTime=toTime))
+            self.knowledge['departTime'] = toTime
             del self.dictionary['times']
         else:
             if self.knowledge['question'] == 'ask_depart_time':
-                set_response("Response")
+                set_response("Sorry I did not understand what you meant by: " + user_message)
             else:
                 self.knowledge['question'] = 'ask_depart_time'
-                set_response("What time would you like to travel leave")
+            set_response("What time would you like the train to leave?")
             self.declare(Fact(isQuestion=True))
 
     # Ask If Return
@@ -218,10 +239,10 @@ class Booking(KnowledgeEngine):
             del self.dictionary['answer']
         else:
             if self.knowledge['question'] == 'ask_is_return':
-                set_response("Response")
+                set_response("Sorry I did not understand that")
             else:
                 self.knowledge['question'] = 'ask_is_return'
-                set_response("Response")
+            set_response("Do you want a return journey?")
             self.declare(Fact(isQuestion=True))
 
     # Ask Return Date
@@ -237,19 +258,19 @@ class Booking(KnowledgeEngine):
             returnDate = self.dictionary.get('dates')
             returnDate = returnDate[1] if len(returnDate) > 1 else returnDate[0]
             if dateutil.parser.parse(returnDate) < dateutil.parser.parse(self.knowledge.get('departDate')):
-                set_response("Response")
+                set_response("Sorry, " +user_message+ "is not valid, please enter a date you would like to return on")
                 error = True
             else:
                 self.declare(Fact(returnDate=returnDate))
                 self.knowledge['returnDate'] = returnDate
 
         if self.knowledge['question'] == 'ask_return_date' and returnDate == 'false' and not error:
-            set_response("Response")
+            set_response("Sorry I did not understand: '" +user_message+ "' , please enter a valid date")
         else:
             self.knowledge['question'] = 'ask_return_date'
 
         if returnDate == 'false' or error:
-            set_response("Response")
+            set_response("Please enter a date in which you would like to return")
             self.declare(Fact(isQuestion=True))
 
     # Ask Return Time
@@ -266,10 +287,10 @@ class Booking(KnowledgeEngine):
             self.knowledge['returnTime'] = returnTime
         else:
             if self.knowledge['question'] == 'ask_return_time':
-                set_response("Response")
+                set_response("Sorry I did not understand what you meant by" +user_message+ " please enter a valid time")
             else:
                 self.knowledge['question'] = 'ask_return_time'
-                set_response("Response")
+            set_response("What time would you like to return?")
             self.declare(Fact(isQuestion=True))
 
     # Show Single Ticket
@@ -282,15 +303,17 @@ class Booking(KnowledgeEngine):
           Fact(departTime=MATCH.departTime),
           salience=91)
     def show_single_ticket(self, fromLocation, toLocation, departDate, departTime):
-        if not 'givenTicket' in self.knowledge:
+        if 'givenTicket' not in self.knowledge:
+            print(fromLocation, toLocation)
             ticket = Ticket.get_ticket_single(fromLocation, toLocation, departDate, departTime)
             if not ticket:
-                set_response("Response")
+                set_response("Sorry we failed to find an available ticket for you based on the information you have provided")
                 self.declare(Fact(givenTicket=False))
                 self.knowledge['givenTicket'] = False
             else:
-                set_response("Response")
                 self.knowledge['url'] = ticket.get('url')
+                set_response("The cheapest ticket we found: ")
+                set_response()
                 self.declare(Fact(givenTicket=True))
                 self.knowledge['givenTicket'] = True
 
@@ -309,7 +332,7 @@ class Booking(KnowledgeEngine):
         if not 'givenTicket' in self.knowledge:
             ticket = Ticket.get_ticket_return(fromLocation, toLocation, departDate, departTime, returnDate, returnTime)
             if not ticket:
-                set_response("Booking")
+                set_response("Sorry we failed to find a ticket based on the information you have provided")
                 self.declare(Fact(givenTicket=False))
                 self.knowledge['givenTicket'] = False
             else:

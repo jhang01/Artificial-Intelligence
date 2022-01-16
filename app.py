@@ -36,6 +36,7 @@ def get_bot_response():
             conn.close()
             print("Database connection close")
             '''
+    print(response)
     return response
 
 
@@ -43,9 +44,6 @@ def what_to_respond():
     userText = request.args.get('msg')
     kb.set_user_message(userText)
     kb.process_entities(nlp.get_entities(userText))
-
-
-
 
 if __name__ == '__main__':
     app.run()
