@@ -9,11 +9,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import SGDRegressor
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import f_regression
-from sklearn.feature_selection import mutual_info_regression
 from sklearn.svm import LinearSVR
 from math import sin, sqrt
 import numpy as np
@@ -31,11 +26,11 @@ conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow',h
 # Create a cursor
 cursor = conn.cursor()
 
-cursor.execute('SELECT * FROM trainperformance2018')
+cursor.execute('SELECT * FROM trainperformance')
 
 data = cursor.fetchall() # Get all the row in traindata
 
-cursor.execute('SELECT * FROM weather2018')
+cursor.execute('SELECT * FROM weather2017')
 
 weatherdata = cursor.fetchall()
 
@@ -115,7 +110,6 @@ def calculate_arrival_time(begin_station, destination_station, left_time_string,
         left_time_date = left_time_date + timedelta(minutes=time_difference_df.loc[i]['Minutes'])
         current_offtime = is_off_time(str(left_time_date.time()), date.today().weekday())
         scaled = scaler.transform([[current_temp, current_precip, current_condition, current_snowdepth, current_offtime, current_season]])
-        # print(str(current_temp) + " " + str(current_precip) + " " + str(current_condition) + " " + str(current_snowdepth) + " " + str(current_offtime) + " " + str(current_season))
         print(int(prediction_model.predict(scaled)))
         predicted_delay = prediction_model.predict(scaled)
     
@@ -249,7 +243,9 @@ def get_snow(date):
 
     # 20 -> 15
 def mlpregressor(x_train, y_train, x_test, y_test):
-    mlp = MLPRegressor(hidden_layer_sizes=15, solver='sgd', max_iter=10000, activation='identity', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
+    # mlp = MLPRegressor(hidden_layer_sizes=150, solver='lbfgs', max_iter=10000, activation='identity', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
+    mlp = MLPRegressor(hidden_layer_sizes=150, solver='adam', max_iter=10000, activation='logistic', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
+
     mlp.fit(x_train, y_train)
 
     y_guess = mlp.predict(x_test)
@@ -259,14 +255,12 @@ def mlpregressor(x_train, y_train, x_test, y_test):
     return mlp
 
 def knn(x_train, y_train, x_test, y_test):
-    knn = KNeighborsRegressor(n_neighbors=7)
-    knn.fit(x_train, y_train)
     
     neighbors = np.arange(1,9)
     train_accuracy = np.empty(len(neighbors))
     test_accuracy = np.empty(len(neighbors))
     for i, k in enumerate(neighbors):
-        knn = KNeighborsRegressor(n_neighbors=k, weights='distance')
+        knn = KNeighborsRegressor(n_neighbors=k)
         knn.fit(x_train, y_train)
 
         train_accuracy[i] = knn.score(x_train, y_train)
@@ -290,7 +284,7 @@ def svregression(x_train, y_train, x_test, y_test):
     return svr
 
 def rand_forest(x_train, y_train, x_test, y_test):
-    regressor = RandomForestRegressor(n_estimators=100, random_state=0)
+    regressor = RandomForestRegressor(n_estimators=200, random_state=0)
     regressor.fit(x_train, y_train)
     y_guess = regressor.predict(x_test)
     print(sqrt(mean_squared_error(y_test, y_guess)), r2_score(y_test, y_guess))
@@ -317,12 +311,17 @@ if __name__ == '__main__':
     scaler = StandardScaler()
     scaler.fit(X)
 
-    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y, test_size=0.3, random_state=1)
+    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y, test_size=0.1, random_state=1)
 
     Xtrain = scaler.transform(Xtrain)
     Xtest = scaler.transform(Xtest)
+    prediction_model = mlpregressor(Xtrain, Ytrain, Xtest, Ytest)
+    """
+    startTime = time.time()
     
-    prediction_model = knn(Xtrain, Ytrain, Xtest, Ytest)
+    executionTime = (time.time() - startTime)
+    print('Execution time in seconds: ' + str(executionTime))
+    """
     """
     a = estimate_time_difference()
     calculate_arrival_time('WDON', 'VAUXHLM', '8:00', 10, a, prediction_model)

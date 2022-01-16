@@ -66,6 +66,6 @@ class Ticket(object):
 
 if __name__ == '__main__':
     ticket = Ticket()
-    print(ticket.get_ticket_single("NRW", "CHM", "today", "1000"))
+    print(ticket.get_ticket_single("NRW", "CHM", "today", "2100"))
     #ticket.get_ticket_return("NRW", "CHM", "today", "1545", "tommorow", "1545")
     #print(ticket.get_ticket_return("NRW", "CHM", "today", "1545", "tomorrow", "1545"))
