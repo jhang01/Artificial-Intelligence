@@ -73,13 +73,31 @@
                 $.get("/get", { msg: text }, async function(data) {
                     let list = data.split("@/")
                     list.forEach(async (item) => {
-                        if (item !== "") {
+                        if (item.includes('sendHyperLink:')){
+                            item = item.slice(14)
+                            console.log(item);
+                            await chat_bot_link_response(item)
+                        }
+                        else if (item !== "") {
                             await chat_bot_response(item);
                         }
                     })
                 })
             }
 
+            function chat_bot_link_response(data){
+                document.getElementById("chatbox").innerHTML +=
+                    `
+                    <div class="msg left-msg">
+                        <div class="msg-img">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="msg-bubble">
+                            <a href=${data}>Train ticket here</a>
+                        </div>
+                    </div>
+                    `;
+            }
 
 
             function chat_bot_response(data){

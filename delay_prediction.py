@@ -244,7 +244,7 @@ def get_snow(date):
     # 20 -> 15
 def mlpregressor(x_train, y_train, x_test, y_test):
     # mlp = MLPRegressor(hidden_layer_sizes=150, solver='lbfgs', max_iter=10000, activation='identity', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
-    mlp = MLPRegressor(hidden_layer_sizes=150, solver='adam', max_iter=10000, activation='logistic', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
+    mlp = MLPRegressor(hidden_layer_sizes=150, solver='adam', max_iter=10000, activation='relu', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
 
     mlp.fit(x_train, y_train)
 
