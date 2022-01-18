@@ -152,44 +152,6 @@ def is_weekend(day):
     else:
         return 0
 
-"""
-def associated_train_deviation():
-
-    initial_train_date = datetime(2025,9,1)
-    first_train = True
-    prev_train_id = '734960'
-
-    prev_train_deviations = {}
-    curr_train_deviations = {}
-
-    for i in range(0, len(df)):
-        print(i)
-        train_date = datetime.strptime(df.loc[i]['rid'][slice(0,8)], '%Y%m%d')
-        train_id = df.loc[i]['rid'][slice(9,15)]
-
-        if initial_train_date != train_date:
-            first_train = True
-        elif first_train == True and prev_train_id != train_id:
-            first_train = False
-
-        if prev_train_id != train_id:
-            prev_train_deviations = curr_train_deviations.copy()
-            curr_train_deviations = {}
-
-        if df.loc[i]['dep_at'] != None and df.loc[i]['ptd'] != None:
-            train_dev = df.loc[i, 'prev train deviation'] = (datetime.strptime((df.loc[i]['dep_at']).strip(), '%H:%M') - datetime.strptime((df.loc[i]['ptd']).strip(), '%H:%M')).total_seconds()/60
-        else:
-            train_dev = 0
-        curr_train_deviations.update({df.loc[i]['tpl']: train_dev})
-        if(df.loc[i]['tpl'] not in prev_train_deviations):
-            prev_train_deviations.update({df.loc[i]['tpl']: 0})
-        if first_train == False and prev_train_deviations[df.loc[i]['tpl']] != None:
-            df.loc[i, 'prev train deviation'] = prev_train_deviations[df.loc[i]['tpl']]
-        else:
-            df.loc[i, 'prev train deviation'] = 0
-        initial_train_date = train_date
-        prev_train_id = train_id
-"""
 def weather():
     df['temperature'] = df.apply(lambda row : get_temperature(datetime.strptime(row['rid'][slice(0,8)], '%Y%m%d').strftime('%Y-%m-%d')), axis=1)
     df['precipitation'] = df.apply(lambda row : get_precipitation(datetime.strptime(row['rid'][slice(0,8)], '%Y%m%d').strftime('%Y-%m-%d')), axis=1)
@@ -241,7 +203,6 @@ def get_snow(date):
     else:
         return 0
 
-    # 20 -> 15
 def mlpregressor(x_train, y_train, x_test, y_test):
     # mlp = MLPRegressor(hidden_layer_sizes=150, solver='lbfgs', max_iter=10000, activation='identity', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
     mlp = MLPRegressor(hidden_layer_sizes=150, solver='adam', max_iter=10000, activation='relu', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
@@ -275,21 +236,20 @@ def knn(x_train, y_train, x_test, y_test):
     plt.show()
     return knn
 
-# Takes an awful long time !!!! and negative r squared
-def svregression(x_train, y_train, x_test, y_test):
-    svr = LinearSVR()
-    svr.fit(x_train, y_train)
-    y_guess = svr.predict(x_test)
-    print(sqrt(mean_squared_error(y_test, y_guess)), r2_score(y_test, y_guess))
-    return svr
-
 def rand_forest(x_train, y_train, x_test, y_test):
-    regressor = RandomForestRegressor(n_estimators=200, random_state=0)
+    regressor = RandomForestRegressor(n_estimators=50, max_features="auto", bootstrap=True, oob_score=False, random_state=0)
     regressor.fit(x_train, y_train)
     y_guess = regressor.predict(x_test)
     print(sqrt(mean_squared_error(y_test, y_guess)), r2_score(y_test, y_guess))
     return regressor
 
+from sklearn import linear_model
+def ridge(x_train, y_train, x_test, y_test):
+    reg = linear_model.Ridge()
+    reg.fit(x_train, y_train)
+    y_guess = reg.predict(x_test)
+    print(sqrt(mean_squared_error(y_test, y_guess)), r2_score(y_test, y_guess))
+    return reg
 
 if __name__ == '__main__':
     
@@ -305,7 +265,7 @@ if __name__ == '__main__':
 
     Y = filtered_df.iloc[:,27]
 
-    X = filtered_df.iloc[:,[21,22,23,24,25,26]]
+    X = filtered_df.iloc[:,[21,22,24,25]]
     
     print(X)
     scaler = StandardScaler()
@@ -315,7 +275,7 @@ if __name__ == '__main__':
 
     Xtrain = scaler.transform(Xtrain)
     Xtest = scaler.transform(Xtest)
-    prediction_model = mlpregressor(Xtrain, Ytrain, Xtest, Ytest)
+    prediction_model = rand_forest(Xtrain, Ytrain, Xtest, Ytest)
     """
     startTime = time.time()
     

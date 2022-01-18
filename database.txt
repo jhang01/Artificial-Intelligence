@@ -4,7 +4,8 @@ CREATE TABLE conversationdetails(
 );
 
 CREATE TABLE trainstation(
-    station_name VARCHAR(50) PRIMARY KEY UNIQUE NOT NULL,
+    station VARCHAR(50) PRIMARY KEY UNIQUE NOT NULL,
+    station_name VARCHAR(50) UNIQUE NOT NULL,
     abbreviations VARCHAR(50) UNIQUE NOT NULL
 )
 
