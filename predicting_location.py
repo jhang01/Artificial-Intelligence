@@ -6,7 +6,7 @@ import unittest
 
 data = read_csv("stationabb.csv")
 
-stations = data['Station Name'].tolist()
+stations = data['Station'].tolist()
 stationsAbb = data['CRS Code']
 
 def predict_location(location):
@@ -17,6 +17,7 @@ def predict_location(location):
         stationAbb = stationsAbb[i]
         guessed_station = False
         #probably do not need guessed_station
+        return uppercase_location, stationAbb, guessed_station
     elif len(close_matches) > 0:
         guessed_station = True
         i = data.loc[data['Station'] == close_matches[0]].index[0]
@@ -27,9 +28,8 @@ def predict_location(location):
     else:
         length = len(uppercase_location)
         for station in stations:
-            print(station[:length])
-            if uppercase_location in station[:length]:
-                stationAbb = data[data['Station'] == station].values[0]
+            stationAbb = data[data['Station'] == station].values[0][2]
+            if uppercase_location in station and uppercase_location[0] in stationAbb:
                 return station, stationAbb, True
         return None, None, False
 
@@ -69,7 +69,7 @@ def predict_location(location):
 """
 
 class PredictLocationTest(unittest.TestCase):
-    """
+    
     def test_same_name(self):
         self.assertEqual(predict_location('norwich')[1], 'NRW')
 
@@ -77,13 +77,35 @@ class PredictLocationTest(unittest.TestCase):
         self.assertEqual(predict_location('marke')[1], 'MSK')
     
     def test_similar_name(self):
-        self.assertEqual(predict_location('southampton')[1], 'SOU')
+        self.assertEqual(predict_location('southampton')[1], 'SOA')
         
     def test_not_found(self):
         self.assertEqual(predict_location('blaaa')[1], None)
-    """
+    
        
 
 if __name__ == '__main__':
     #unittest.main()
+    print('input: norwch')
+    print(predict_location('norwch'))
+    print('-----------------')
+    print('input: southampton')
     print(predict_location('southampton'))
+    print('-----------------')
+    print('input: victoria')
+    print(predict_location('victoria'))
+    print('-----------------')
+    print('input: weymouth')
+    print(predict_location('weymouth'))
+    print('-----------------')
+    print('input: blaaa')
+    print(predict_location('blaaa'))
+    print('-----------------')
+    print('input: liverpool street')
+    print(predict_location('liverpool street'))
+    print('-----------------')
+    print('input: waterloo')
+    print(predict_location('waterloo'))
+    print('-----------------')
+    print('input: swansea')
+    print(predict_location('swansea'))
