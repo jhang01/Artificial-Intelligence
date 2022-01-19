@@ -130,9 +130,9 @@ def getcity(user):
     return departure, arrival
 
 
-def getSimilarity(rule, user):
-    similarity = rule.similarity(user)
-    return similarity
+# def getSimilarity(rule, user):
+#     similarity = rule.similarity(user)
+#     return similarity
 
 
 
@@ -227,14 +227,11 @@ if __name__ == '__main__':
 
         rule = nlp("buy train ticket")
 
-        similarity = getSimilarity(rule, user)
-        print(similarity)
+        # similarity = getSimilarity(rule, user)
+        # print(similarity)
 
         lemmatizaion(user)
         pos(user)
-
-        for entity in user.ents:
-            print(entity.label_, entity.text)
 
         greet = greeting(user)
         if (greet != None):
