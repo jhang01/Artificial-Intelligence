@@ -58,15 +58,6 @@ def pos(doc):
     for token in doc:
         print(token, token.pos_)
 
-
-def station(user):
-    station = []
-    for ent in user.ents:
-        if ent.label_ == 'GPE':
-            station.append(ent.text)
-    return station
-
-
 def getDate(user):
     # Reference from : https://stackoverflow.com/questions/67113389/spacy-matcher-date-pattern-will-match-hyphens-but-not-forward-slashes
     ticketDate = None
@@ -115,17 +106,22 @@ def getcity(user):
     arrival = None
     # Not sure should the matcher be in the knowledge base or nlp
     # To find the match 'from city' and 'to city' to know the departure and arrival station
+
     matcher = Matcher(nlp.vocab)
-    fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE'}]
+    fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE', 'OP' : '*'}]
+    fromStation2 = [{'LOWER': 'from'}, {'POS': 'PROPN', 'OP' : '*'}]
     matcher.add('from', [fromStation])
+    matcher.add('from2', [fromStation2])
     matches = matcher(user)
 
     for match_id, start, end in matches:
         departure = user[start:end].text
 
     matcher2 = Matcher(nlp.vocab)
-    toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE'}]
+    toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE', 'OP' : '*'}]
+    toStation2 = [{'LOWER': 'to'}, {'POS': 'PROPN', 'OP': '*'}]
     matcher2.add('to', [toStation])
+    matcher2.add('to2', [toStation2])
     matches2 = matcher2(user)
 
     for match_id, start, end in matches2:
@@ -237,6 +233,9 @@ if __name__ == '__main__':
         lemmatizaion(user)
         pos(user)
 
+        for entity in user.ents:
+            print(entity.label_, entity.text)
+
         greet = greeting(user)
         if (greet != None):
             print(greet)
@@ -257,9 +256,6 @@ if __name__ == '__main__':
         if (arrival != None):
             print(arrival)
 
-        c = station(user)
-        if (c != None):
-            print(c)
         d = getDate(user)
         if (d != None):
             print("Date: ", d)
