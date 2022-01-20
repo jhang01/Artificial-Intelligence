@@ -1,7 +1,14 @@
 CREATE TABLE conversationdetails(
     user_input VARCHAR(255) NOT NULL,
     response VARCHAR(255) NOT NULL
-);
+)
+
+CREATE TABLE userdata(
+	username VARCHAR(50) PRIMARY KEY NOT NULL,
+    user_input VARCHAR(255) NOT NULL,
+    response VARCHAR(255) NOT NULL,
+	FOREIGN KEY (username) REFERENCES ticketinfo(username)
+)
 
 CREATE TABLE trainstation(
     station VARCHAR(50) PRIMARY KEY UNIQUE NOT NULL,
