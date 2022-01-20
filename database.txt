@@ -34,7 +34,7 @@ CREATE TABLE trainperformance(
     
 CREATE TABLE weather(
   name char(15), 
-  datetime date, 
+  datetime char(10), 
   tempmax decimal, 
   tempmin decimal, 
   temp decimal, 
