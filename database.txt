@@ -1,7 +1,14 @@
 CREATE TABLE conversationdetails(
     user_input VARCHAR(255) NOT NULL,
     response VARCHAR(255) NOT NULL
-);
+)
+
+CREATE TABLE userdata(
+    username VARCHAR(50) PRIMARY KEY NOT NULL,
+    user_input VARCHAR(255) NOT NULL,
+    response VARCHAR(255) NOT NULL,
+    FOREIGN KEY (username) REFERENCES ticketinfo(username)
+)
 
 CREATE TABLE trainstation(
     station VARCHAR(50) PRIMARY KEY UNIQUE NOT NULL,
@@ -31,10 +38,33 @@ CREATE TABLE trainperformance(
   dep_at char(5), 
   cr_code smallint, 
   lr_code smallint)
+  
+  CREATE TABLE singletrainperformance(
+  rid char(16), 
+  tpl char(7), 
+  pta char(5), 
+  ptd char(5), 
+  wta char(8), 
+  wtp char(8), 
+  wtd char(8), 
+  arr_et char(5), 
+  arr_wet char(5), 
+  arr_atremoved boolean, 
+  pass_et char(5), 
+  pass_wet char(5), 
+  pass_atremoved boolean, 
+  dep_et char(5), 
+  dep_wet char(5), 
+  dep_atremoved boolean, 
+  arr_at char(5), 
+  pass_at char(5), 
+  dep_at char(5), 
+  cr_code smallint, 
+  lr_code smallint)
     
 CREATE TABLE weather(
   name char(15), 
-  datetime date, 
+  datetime char(10), 
   tempmax decimal, 
   tempmin decimal, 
   temp decimal, 
