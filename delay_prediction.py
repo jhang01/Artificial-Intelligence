@@ -84,7 +84,7 @@ def estimate_time_difference():
     time_difference_df = pd.DataFrame(time_difference)
     return time_difference_df
 
-def calculate_arrival_time(begin_station, destination_station, left_time_string, delay_amount, time_difference_df, prediction_model):
+def calculate_arrival_time(begin_station, destination_station, left_time_string, delay_amount, time_difference_df, prediction_model, scaler):
     left_time_date = datetime.strptime(left_time_string, '%H:%M')
 
     from_index = time_difference_df.index[time_difference_df['From'] == begin_station].tolist()[0]
@@ -103,18 +103,16 @@ def calculate_arrival_time(begin_station, destination_station, left_time_string,
     current_condition = icon_to_number(weatherData['days'][0]['icon'])
     current_snowdepth = weatherData['days'][0]['snowdepth']
     current_season = check_autumn(datetime.now().strftime('%m'))
-
     predicted_delay = 0
 
     for i in range(from_index, to_index + 1):
         left_time_date = left_time_date + timedelta(minutes=time_difference_df.loc[i]['Minutes'])
         current_offtime = is_off_time(str(left_time_date.time()), date.today().weekday())
         scaled = scaler.transform([[current_temp, current_precip, current_condition, current_snowdepth, current_offtime, current_season]])
-        print(int(prediction_model.predict(scaled)))
         predicted_delay = prediction_model.predict(scaled)
     
     estimate_time = estimate_time + timedelta(minutes=int(predicted_delay[0])) 
-    print(estimate_time)
+    return estimate_time
 
 def is_off_time(time, day):
     time = time.strip().zfill(5)
@@ -203,6 +201,8 @@ def get_snow(date):
     else:
         return 0
 
+
+
 def mlpregressor(x_train, y_train, x_test, y_test):
     # mlp = MLPRegressor(hidden_layer_sizes=150, solver='lbfgs', max_iter=10000, activation='identity', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
     mlp = MLPRegressor(hidden_layer_sizes=150, solver='adam', max_iter=10000, activation='relu', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
@@ -241,6 +241,7 @@ def rand_forest(x_train, y_train, x_test, y_test):
     regressor.fit(x_train, y_train)
     y_guess = regressor.predict(x_test)
     print(sqrt(mean_squared_error(y_test, y_guess)), r2_score(y_test, y_guess))
+    
     return regressor
 
 from sklearn import linear_model
@@ -251,8 +252,7 @@ def ridge(x_train, y_train, x_test, y_test):
     print(sqrt(mean_squared_error(y_test, y_guess)), r2_score(y_test, y_guess))
     return reg
 
-if __name__ == '__main__':
-    
+def train_model():
     weather()
     off_peak_times()
     seasons()
@@ -261,21 +261,76 @@ if __name__ == '__main__':
     print(df.info())
 
     filtered_df = df[df['arr_at'].notnull() & df['pta'].notnull()]
+
     print(filtered_df.iloc[:,27])
+
+    filtered_df["precipitation"] = filtered_df["precipitation"].astype(object).astype(float)
 
     Y = filtered_df.iloc[:,27]
 
-    X = filtered_df.iloc[:,[21,22,24,25]]
+    X = filtered_df.iloc[:,[21,22,23,24,25,26]]
+
+    print(filtered_df.info())
     
     print(X)
     scaler = StandardScaler()
     scaler.fit(X)
 
-    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y, test_size=0.1, random_state=1)
+    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y, test_size=0.1, random_state=2)
 
     Xtrain = scaler.transform(Xtrain)
     Xtest = scaler.transform(Xtest)
     prediction_model = rand_forest(Xtrain, Ytrain, Xtest, Ytest)
+    """
+    startTime = time.time()
+    
+    executionTime = (time.time() - startTime)
+    print('Execution time in seconds: ' + str(executionTime))
+    """
+    return prediction_model, scaler
+    
+
+def get_arrival_time(prediction_model, scaler, begin_station, destination_station, left_time_string, delay_amount):
+    
+    
+    a = estimate_time_difference()
+    calculate_arrival_time(begin_station, destination_station, left_time_string, delay_amount, a, prediction_model, scaler)
+    
+
+if __name__ == '__main__':
+    trained, scaler = train_model()
+    get_arrival_time(trained, scaler, 'WDON', 'VAUXHLM', '8:00', 10)
+    """
+    weather()
+    off_peak_times()
+    seasons()
+
+    df['arrival_diff'] = df.apply(lambda row : (datetime.strptime((row['arr_at']).strip(), '%H:%M') - datetime.strptime((row['pta']).strip(), '%H:%M')).total_seconds()/60  if row['arr_at'] != None and row['pta'] != None else None, axis=1)
+    print(df.info())
+
+    filtered_df = df[df['arr_at'].notnull() & df['pta'].notnull()]
+
+    print(filtered_df.iloc[:,27])
+
+
+    filtered_df["precipitation"] = filtered_df["precipitation"].astype(object).astype(float)
+
+    Y = filtered_df.iloc[:,27]
+
+    X = filtered_df.iloc[:,[21,22,23,24,25,26]]
+
+    print(filtered_df.info())
+    
+    print(X)
+    scaler = StandardScaler()
+    scaler.fit(X)
+
+    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y, test_size=0.1, random_state=2)
+
+    Xtrain = scaler.transform(Xtrain)
+    Xtest = scaler.transform(Xtest)
+    prediction_model = rand_forest(Xtrain, Ytrain, Xtest, Ytest)
+    """
     """
     startTime = time.time()
     
