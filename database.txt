@@ -4,10 +4,9 @@ CREATE TABLE conversationdetails(
 )
 
 CREATE TABLE userdata(
-    username VARCHAR(50) PRIMARY KEY NOT NULL,
+    username VARCHAR(50) NOT NULL,
     user_input VARCHAR(255) NOT NULL,
     response VARCHAR(255) NOT NULL,
-    FOREIGN KEY (username) REFERENCES ticketinfo(username)
 )
 
 CREATE TABLE trainstation(
