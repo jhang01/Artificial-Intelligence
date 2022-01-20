@@ -24,6 +24,9 @@ thanks_output = ("Happy to help!")
 
 services_input = ("booking", "ticket info", "delays")
 
+booking_input = {'travel', 'travels', 'book', 'booking', 'bookings'}
+delay_input ={'predict', 'prediction', 'delay', 'delays'}
+
 
 def greeting(doc):
     for token in doc:

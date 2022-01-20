@@ -32,6 +32,7 @@ class Booking(KnowledgeEngine):
     def _initial_action(self):
         global response
         response = ""
+        #to do add reset to nlp
         if 'reset' in self.dictionary:  # if the dictionary contains reset
             if self.dictionary.get('reset') == 'true':
                 self.knowledge = {}
@@ -41,10 +42,11 @@ class Booking(KnowledgeEngine):
         service = self.dictionary.get('service')  # get service stored
         if 'service' in self.knowledge:  # check if an existing service is already active
             if service != 'chat':  # check if service is to chat
-                name = self.knowledge.get('name')  # keep the name of user
-                self.knowledge = {'name': name, 'service': service}  # create new knowledge with name and service
+                name = self.knowledge.get('name')
+                self.knowledge = {'name': name, 'service': service}
+                # create new knowledge with name and service
         else:
-            self.knowledge['service'] = service  # if no service then set as service
+            self.knowledge['service'] = service  # if no service then set as service #default chat
         print(self.knowledge.get('service'))
         yield Fact(service=self.knowledge.get('service'))
 
@@ -138,7 +140,7 @@ class Booking(KnowledgeEngine):
         else:
             if self.knowledge['question'] == 'ask_name':
                 set_response("Hello again :)")
-                #setresponse for duplicate username
+                # setresponse for duplicate username
             else:
                 self.knowledge['question'] = 'ask_name'
                 set_response("Hi :)")
@@ -229,7 +231,7 @@ class Booking(KnowledgeEngine):
         if 'times' in self.dictionary:
             departTime = self.dictionary.get('times')[0]
             if leaveDate.date() == datetime.now().date() and departTime.hour < datetime.now().hour or (
-                        departTime.hour == datetime.now().hour and departTime.min < datetime.now().min):
+                    departTime.hour == datetime.now().hour and departTime.min < datetime.now().min):
                 set_response("You have entered a time in the past")
                 error = True
             else:
@@ -301,7 +303,7 @@ class Booking(KnowledgeEngine):
             self.knowledge['question'] = 'ask_return_date'
 
         if returnDate == 'false' or error:
-            set_response("When would you like to return")
+            set_response("Which date would you like to return")
             self.declare(Fact(isQuestion=True))
 
     # Ask Return Time
@@ -381,7 +383,8 @@ class Booking(KnowledgeEngine):
           Fact(returnTime=MATCH.returnTime),
           Fact(returnDateDT=MATCH.returnDateDT),
           salience=90)
-    def show_return_ticket(self, fromLocation, toLocation, departDate, departTime, returnDate, returnTime, returnDateDT):
+    def show_return_ticket(self, fromLocation, toLocation, departDate, departTime, returnDate, returnTime,
+                           returnDateDT):
         if 'givenTicket' not in self.knowledge:
             ticket = Ticket.get_ticket_return(fromLocation, toLocation, departDate, departTime, returnDate, returnTime)
             if not ticket:
@@ -390,7 +393,7 @@ class Booking(KnowledgeEngine):
                 self.knowledge['givenTicket'] = False
             else:
                 self.knowledge['url'] = ticket.get('url')
-                set_response("The cheapest ticket we found is: " + "£{:,.2f}".format(ticket['returnTicketPrice']))
+                set_response("The cheapest ticket we found is: " + "£{:,.2f}".format(ticket['ticketPrice']))
                 set_response(" Train depart from: " + ticket['returnDepartureStationName'] +
                              " on: " + returnDateDT.strftime('%b %d, %Y') +
                              " at " + ticket['returnDepartureTime'] +
@@ -419,7 +422,7 @@ class Booking(KnowledgeEngine):
         if 'answer' in self.dictionary:
             if self.dictionary.get('answer') == 'true':
                 set_response("Please click on the following link to book your ticket")
-                set_response("sendHyperLink:"+self.knowledge.get('url'))
+                set_response("sendHyperLink:" + self.knowledge.get('url'))
             self.knowledge['givenTicket'] = False
             self.declare(Fact(whatsNext=True))
             self.knowledge['whatsNext'] = True
