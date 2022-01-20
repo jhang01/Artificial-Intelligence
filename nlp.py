@@ -3,9 +3,10 @@ import dateutil
 from dateutil import parser
 import spacy
 from spacy.matcher import Matcher
+
+import kb
 import predicting_location
 from datetime import datetime
-
 
 nlp = spacy.load('en_core_web_lg')
 
@@ -25,7 +26,7 @@ thanks_output = ("Happy to help!")
 services_input = ("booking", "ticket info", "delays")
 
 booking_input = {'travel', 'travels', 'book', 'booking', 'bookings'}
-delay_input ={'predict', 'prediction', 'delay', 'delays'}
+delay_input = {'predict', 'prediction', 'delay', 'delays'}
 
 
 def greeting(doc):
@@ -61,14 +62,16 @@ def pos(doc):
     for token in doc:
         print(token, token.pos_)
 
+
 def getDate(user):
     # Reference from : https://stackoverflow.com/questions/67113389/spacy-matcher-date-pattern-will-match-hyphens-but-not-forward-slashes
     ticketDate = None
 
     for ent in user.ents:
         if ent.label_ == "DATE":
-            ticketDate = dateparser.parse(ent.text,  settings={'DATE_ORDER': 'DMY'}, languages=['en']) # uk chatbot so use DMY
-            #ticketDate = str(ticketDate.day).zfill(2) + str(ticketDate.month).zfill(2) + (str(ticketDate.year)[2:])
+            ticketDate = dateparser.parse(ent.text, settings={'DATE_ORDER': 'DMY'},
+                                          languages=['en'])  # uk chatbot so use DMY
+            # ticketDate = str(ticketDate.day).zfill(2) + str(ticketDate.month).zfill(2) + (str(ticketDate.year)[2:])
         else:
             matcher = Matcher(nlp.vocab)
             date1 = [{'TEXT': {'REGEX': r'^\d{1,2}/\d{1,2}/\d{2}(?:\d{2})?$'}}]
@@ -117,6 +120,7 @@ def getTime(user):
 
     return ticket_time
 
+
 def getcity(user):
     departure = None
     arrival = None
@@ -124,8 +128,8 @@ def getcity(user):
     # To find the match 'from city' and 'to city' to know the departure and arrival station
 
     matcher = Matcher(nlp.vocab)
-    fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE', 'OP' : '*'}]
-    fromStation2 = [{'LOWER': 'from'}, {'POS': 'PROPN', 'OP' : '*'}]
+    fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
+    fromStation2 = [{'LOWER': 'from'}, {'POS': 'PROPN', 'OP': '*'}]
     matcher.add('from', [fromStation])
     matcher.add('from2', [fromStation2])
     matches = matcher(user)
@@ -134,7 +138,7 @@ def getcity(user):
         departure = user[start:end].text
 
     matcher2 = Matcher(nlp.vocab)
-    toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE', 'OP' : '*'}]
+    toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
     toStation2 = [{'LOWER': 'to'}, {'POS': 'PROPN', 'OP': '*'}]
     matcher2.add('to', [toStation])
     matcher2.add('to2', [toStation2])
@@ -149,7 +153,6 @@ def getcity(user):
 # def getSimilarity(rule, user):
 #     similarity = rule.similarity(user)
 #     return similarity
-
 
 
 def get_entities(message):
@@ -168,40 +171,37 @@ def get_entities(message):
     if str(message) in disagree_input:
         kbdictionary['answer'] = 'false'
 
-    hasName = False
-    for entity in message.ents:
-        if entity.label_ == 'PERSON':
-            kbdictionary['name'] = entity.text
-            hasName = True
-    if not hasName and len(str(message).split()) == 1 and not ('greeting' in kbdictionary):
-        kbdictionary['name'] = str(message)
-
+    if not kb.hasUsername:
+        if len(str(message).split()) == 1 and 'greeting' not in kbdictionary:
+            kbdictionary['name'] = str(message)
 
     locations = []
     locations_abbreviation = []
     fromStation, toStation = getcity(message)
 
     if fromStation:
-        fromStation = fromStation[5:]
-        station_name, station_abbreviation, guessed = predicting_location.predict_location(str(fromStation))
-        locations.append(station_name)
-        locations_abbreviation.append(station_abbreviation)
-        if guessed:
-            kbdictionary['guessedFrom'] = 'true'
-        else:
-            kbdictionary['guessedFrom'] = 'false'
+        fromStation = str(fromStation[5:])
+        station_name, station_abbreviation, guessed = predicting_location.predict_location(fromStation)
+        if station_name:
+            locations.append(station_name)
+            locations_abbreviation.append(station_abbreviation)
+            if guessed:
+                kbdictionary['guessedFrom'] = 'true'
+            else:
+                kbdictionary['guessedFrom'] = 'false'
 
     if toStation:
-        toStation = toStation[3:]
-        station_name, station_abbreviation, guessed = predicting_location.predict_location(str(toStation))
-        locations.append(station_name)
-        locations_abbreviation.append(station_abbreviation)
-        if guessed:
-            kbdictionary['guessedTo'] = 'true'
-        else:
-            kbdictionary['guessedTo'] = 'false'
+        toStation = str(toStation[3:])
+        station_name, station_abbreviation, guessed = predicting_location.predict_location(toStation)
+        if station_name:
+            locations.append(station_name)
+            locations_abbreviation.append(station_abbreviation)
+            if guessed:
+                kbdictionary['guessedTo'] = 'true'
+            else:
+                kbdictionary['guessedTo'] = 'false'
 
-    if len(locations) > 0:
+    if len(locations) > 1:
         kbdictionary['location'] = locations
         kbdictionary['station_abbreviation'] = locations_abbreviation
 
@@ -227,6 +227,9 @@ def get_entities(message):
 
         if token in {'travel', 'travels', 'book', 'booking', 'bookings'}:
             kbdictionary['service'] = 'book'
+
+        if token in {'info', 'ticket info'}:
+            kbdictionary['service'] = 'info'
 
         if token in {'return', 'returns'}:
             kbdictionary['return'] = 'true'

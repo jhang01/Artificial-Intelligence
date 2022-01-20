@@ -4,6 +4,8 @@ from experta import *
 from experta.watchers import RULES, AGENDA
 import dateutil.parser
 from datetime import datetime
+
+import kb
 from web_scrapper import Ticket
 import nlp
 from random import choice
@@ -15,6 +17,16 @@ global response
 
 global error_response
 global user_message
+
+
+def set_has_username():
+    global hasUsername
+    hasUsername = False
+
+
+def change_has_username():
+    global hasUsername
+    hasUsername = True
 
 
 def set_response(message):
@@ -32,7 +44,7 @@ class Booking(KnowledgeEngine):
     def _initial_action(self):
         global response
         response = ""
-        #to do add reset to nlp
+        # to do add reset to nlp
         if 'reset' in self.dictionary:  # if the dictionary contains reset
             if self.dictionary.get('reset') == 'true':
                 self.knowledge = {}
@@ -40,10 +52,13 @@ class Booking(KnowledgeEngine):
 
         # Get Service
         service = self.dictionary.get('service')  # get service stored
+        name = self.knowledge.get('name')
+
         if 'service' in self.knowledge:  # check if an existing service is already active
             if service != 'chat':  # check if service is to chat
-                name = self.knowledge.get('name')
-                self.knowledge = {'name': name, 'service': service}
+                self.knowledge['service'] = service
+                if name:
+                    self.knowledge['name'] = name
                 # create new knowledge with name and service
         else:
             self.knowledge['service'] = service  # if no service then set as service #default chat
@@ -128,15 +143,25 @@ class Booking(KnowledgeEngine):
         if 'greeting' in self.dictionary:
             set_response("Hi :)")
 
+    ##remake name class
     # Ask Name
     @Rule(NOT(Fact(name=W())),
           salience=99)
     def ask_name(self):
         if 'name' in self.dictionary:
             name = self.dictionary.get('name')
-            set_response("Hello " + name)
-            self.declare(Fact(name=name))
-            self.knowledge['name'] = name
+            if (name in nlp.booking_input) or (name in nlp.delay_input):  # need to add duplicate for database
+                set_response(
+                    "The name you entered '" + name + "' cannot be assigned as an username. You're now assigned as a guest user.")
+                name = "guest"
+                change_has_username()  # set to true
+                self.declare(Fact(name=name))
+                self.knowledge['name'] = name
+            else:
+                set_response("Hello " + name)
+                change_has_username()  # set to true
+                self.declare(Fact(name=name))
+                self.knowledge['name'] = name
         else:
             if self.knowledge['question'] == 'ask_name':
                 set_response("Hello again :)")
@@ -145,13 +170,15 @@ class Booking(KnowledgeEngine):
                 self.knowledge['question'] = 'ask_name'
                 set_response("Hi :)")
             set_response(nlp.greeting_output)
+            self.declare(Fact(isQuestion=True))
+
 
     # Ask Service
     @Rule(Fact(service='chat'),
           Fact(name=MATCH.name),
+          NOT(Fact(isQuestion=W())),
           salience=98)
     def ask_if_booking(self, name):
-
         if self.knowledge['question'] == 'ask_if_booking':
             set_response("Sorry, I did not understand what you meant by " + user_message)
         else:
@@ -540,6 +567,8 @@ class Booking(KnowledgeEngine):
 # Initialize new booking
 engine = Booking()
 engine.knowledge = {}
+set_has_username()
+global hasUsername
 
 
 # Set dictionary and run knowledge engine
