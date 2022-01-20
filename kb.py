@@ -120,25 +120,28 @@ class Booking(KnowledgeEngine):
             print(self.knowledge.get('informationGiven'))
             yield Fact(informationGiven=self.knowledge.get('informationGiven'))
 
-    @Rule(salience=100)  # higher number priority
+    @Rule(NOT(Fact(service='chat')),
+          salience=100)  # higher number priority
     def message_greeting(self):
         if 'greeting' in self.dictionary:
             set_response("Hi :)")
 
     # Ask Name
-    @Rule(Fact(service='chat'),
-          NOT(Fact(name=W())),
+    @Rule(NOT(Fact(name=W())),
           salience=99)
     def ask_name(self):
         if 'name' in self.dictionary:
             name = self.dictionary.get('name')
+            set_response("Hello " + name)
             self.declare(Fact(name=name))
             self.knowledge['name'] = name
         else:
             if self.knowledge['question'] == 'ask_name':
-                set_response("We could not find user: " + user_message + "please provide us with your username")
+                set_response("Hello again :)")
+                #setresponse for duplicate username
             else:
                 self.knowledge['question'] = 'ask_name'
+                set_response("Hi :)")
             set_response(nlp.greeting_output)
 
     # Ask Service
@@ -146,9 +149,9 @@ class Booking(KnowledgeEngine):
           Fact(name=MATCH.name),
           salience=98)
     def ask_if_booking(self, name):
+
         if self.knowledge['question'] == 'ask_if_booking':
-            set_response("Sorry, I did not understand what you meant by " + user_message + ". Which service would you "
-                                                                                           "like?")
+            set_response("Sorry, I did not understand what you meant by " + user_message)
         else:
             self.knowledge['question'] = 'ask_if_booking'
         set_response("Which service would you like? Available services: booking, ticket information, train delay "
@@ -177,9 +180,8 @@ class Booking(KnowledgeEngine):
             self.knowledge['toLocation'] = location[1]
         else:
             if self.knowledge['question'] == 'ask_location':
-                set_response(
-                    "Sorry I did not understand: " + user_message + ". Please specify where you would like to travel from and to"
-                                                                    ", for example 'from london liverpool street to cambridge'")
+                set_response("Please specify where you would like to travel from and to, for example 'from london "
+                             "liverpool street to cambridge'")
 
             else:
                 self.knowledge['question'] = 'ask_location'
@@ -228,7 +230,7 @@ class Booking(KnowledgeEngine):
             departTime = self.dictionary.get('times')[0]
             if leaveDate.date() == datetime.now().date() and departTime.hour < datetime.now().hour or (
                         departTime.hour == datetime.now().hour and departTime.min < datetime.now().min):
-                set_response("Sorry you have entered a time in the past")
+                set_response("You have entered a time in the past")
                 error = True
             else:
                 toTime = str(departTime.hour).zfill(2) + str(departTime.minute).zfill(2)
@@ -237,7 +239,7 @@ class Booking(KnowledgeEngine):
                 del self.dictionary['times']
 
         if self.knowledge['question'] == 'ask_depart_time' and departTime == 'false' and not error:
-            set_response("Sorry I did not understand what you meant by: " + user_message)
+            set_response("Please provide a valid time")
         else:
             self.knowledge['question'] = 'ask_depart_time'
 
@@ -261,10 +263,10 @@ class Booking(KnowledgeEngine):
             del self.dictionary['answer']
         else:
             if self.knowledge['question'] == 'ask_is_return':
-                set_response("Sorry I did not understand that")
+                set_response("Please let me know if you would like to book a return journey")
             else:
                 self.knowledge['question'] = 'ask_is_return'
-            set_response("Do you want a return journey?")
+            set_response("Would you like to book a return journey?")
             self.declare(Fact(isQuestion=True))
 
     # Ask Return Date
@@ -283,7 +285,8 @@ class Booking(KnowledgeEngine):
             else:
                 returnDate = returnDate[0]
             if returnDate.date() < self.knowledge.get('leaveDate').date():
-                set_response("Sorry, " + user_message + "is not valid, please enter a date you would like to return on")
+                set_response("The date you entered for your return journey is before you departure date. I am many "
+                             "things but not a time machine. Please could you enter a date after your departure date")
                 error = True
             else:
                 self.declare(Fact(returnDateDT=returnDate))  # stores a datetime version of variable
@@ -293,12 +296,12 @@ class Booking(KnowledgeEngine):
                 self.knowledge['returnDate'] = toDate
 
         if self.knowledge['question'] == 'ask_return_date' and returnDate == 'false' and not error:
-            set_response("Sorry I did not understand: '" + user_message + "' , please enter a valid date")
+            set_response("Please enter a valid date")
         else:
             self.knowledge['question'] = 'ask_return_date'
 
         if returnDate == 'false' or error:
-            set_response("Please enter a date in which you would like to return")
+            set_response("When would you like to return")
             self.declare(Fact(isQuestion=True))
 
     # Ask Return Time
@@ -319,8 +322,7 @@ class Booking(KnowledgeEngine):
             self.knowledge['returnTime'] = toTime
         else:
             if self.knowledge['question'] == 'ask_return_time':
-                set_response(
-                    "Sorry I did not understand what you meant by" + user_message + " please enter a valid time")
+                set_response("Please enter a valid time")
             else:
                 self.knowledge['question'] = 'ask_return_time'
             set_response("What time would you like to return?")
@@ -345,10 +347,9 @@ class Booking(KnowledgeEngine):
                 self.declare(Fact(givenTicket=False))
                 self.knowledge['givenTicket'] = False
             else:
-
                 self.knowledge['url'] = ticket.get('url')
-                set_response("The cheapest ticket we found is: £" + ticket['ticketPrice'])
-                set_response("Train depart from: " + ticket['departureStationName'] +
+                set_response("The cheapest ticket we found is: " + "£{:,.2f}".format(ticket['ticketPrice']))
+                set_response(" Train depart from: " + ticket['departureStationName'] +
                              " on: " + leaveDate.strftime('%b %d, %Y') +
                              " at " + ticket['departureTime'] +
                              " and arrive in " + ticket['arrivalStationName'] +
@@ -378,11 +379,9 @@ class Booking(KnowledgeEngine):
           Fact(departTime=MATCH.departTime),
           Fact(returnDate=MATCH.returnDate),
           Fact(returnTime=MATCH.returnTime),
-          Fact(leaveDate=MATCH.leaveDate),
           Fact(returnDateDT=MATCH.returnDateDT),
           salience=90)
-    def show_return_ticket(self, fromLocation, toLocation, departDate, departTime, returnDate, returnTime, leaveDate,
-                           returnDateDT):
+    def show_return_ticket(self, fromLocation, toLocation, departDate, departTime, returnDate, returnTime, returnDateDT):
         if 'givenTicket' not in self.knowledge:
             ticket = Ticket.get_ticket_return(fromLocation, toLocation, departDate, departTime, returnDate, returnTime)
             if not ticket:
@@ -390,23 +389,25 @@ class Booking(KnowledgeEngine):
                 self.declare(Fact(givenTicket=False))
                 self.knowledge['givenTicket'] = False
             else:
-                set_response("We have found this ticket: ")
-                set_response("Train depart from: " + ticket['departureStationName'] +
-                             " on: " + leaveDate.strftime('%b %d, %Y') +
-                             " at: " + ticket['departureTime'] +
-                             " and arrive in: " + ticket['arrivalStationName'] +
-                             " at: " + ticket['arrivalTime'] +
-                             ". The total journey time is: " + ticket['duration'] +
-                             ". There will be " + ticket['changes'] + " number of changes.")
-                set_response("Train return from: " + ticket['arrivalStationName'] +
-                             " on: " + returnDateDT.strftime('%b %d, %Y') +
-                             " at: " + ticket['departureTime'] +
-                             " and arrive in: " + ticket['departureStationName'] +
-                             " at: " + ticket['arrivalTime'] +
-                             ". The total journey time is: " + ticket['duration'] +
-                             ". There will be " + ticket['changes'] + " number of changes.")
-
                 self.knowledge['url'] = ticket.get('url')
+                set_response("The cheapest ticket we found is: " + "£{:,.2f}".format(ticket['returnTicketPrice']))
+                set_response(" Train depart from: " + ticket['returnDepartureStationName'] +
+                             " on: " + returnDateDT.strftime('%b %d, %Y') +
+                             " at " + ticket['returnDepartureTime'] +
+                             " and arrive in " + ticket['returnArrivalStationName'] +
+                             " at " + ticket['returnArrivalTime'] +
+                             ". The total journey time is " + ticket['returnDuration'] +
+                             ". There will be " + ticket['returnChanges'] + " number of changes.")
+                set_response("Additional information: Tickets are for " + ticket['returnPassenger'] +
+                             ". This ticket is an " + ticket["returnTicketType"] + " ticket" +
+                             ". Route information: " + ticket["returnDescription"] +
+                             " Train service provided by " + ticket['returnFareProvider'] +
+                             ". Ticket Restrictions: " + ticket['returnRestrictions'])
+
+                if ticket['warning'] != "None":
+                    set_response("Warning: " + ticket['warning'])
+                if ticket['status'] != "None":
+                    set_response("Train status: " + ticket['status'])
                 self.declare(Fact(givenTicket=True))
                 self.knowledge['givenTicket'] = True
 
@@ -417,18 +418,18 @@ class Booking(KnowledgeEngine):
     def confirm_booking(self):
         if 'answer' in self.dictionary:
             if self.dictionary.get('answer') == 'true':
-                set_response("Booking")
-                set_response("To book")
+                set_response("Please click on the following link to book your ticket")
+                set_response("sendHyperLink:"+self.knowledge.get('url'))
             self.knowledge['givenTicket'] = False
             self.declare(Fact(whatsNext=True))
             self.knowledge['whatsNext'] = True
             del self.dictionary['answer']
         else:
             if self.knowledge['question'] == 'confirm_booking':
-                set_response("Sorry I did not understand that")
+                set_response("Please tell me if you want to book this ticket")
             else:
                 self.knowledge['question'] = 'confirm_booking'
-            set_response("Is this the train ticket you want?")
+            set_response("Do you want to book this train ticket?")
 
     # Ask Predict Location
     @Rule(Fact(service='predict'),
@@ -527,7 +528,7 @@ class Booking(KnowledgeEngine):
           salience=83)
     def whats_next(self):
         if self.knowledge['question'] == 'whats_next':
-            set_response("Response")
+            set_response("You can book another ticket, check delays or view ticket information")
         else:
             self.knowledge['question'] = 'whats_next'
         set_response("Is there anything else I can help you with?")

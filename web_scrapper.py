@@ -19,17 +19,22 @@ class Ticket(object):
 
     @staticmethod
     def get_ticket_return(fromStation, toStation, departDate, departTime, returnDate, returnTime):
+        print(fromStation, toStation, departDate, departTime, returnDate, returnTime)
         parsed_html = Ticket.request_page_return(fromStation, toStation, departDate, departTime, returnDate, returnTime)
         return Ticket.get_cheapest_ticket(parsed_html, True, departDate, returnDate)
 
     @staticmethod
     def request_page_single(fromStation, toStation, departDate, departTime):
+        fromStation = fromStation.replace(" ", "")
+        toStation = toStation.replace(" ", "")
         url = ('http://ojp.nationalrail.co.uk/service/timesandfares/' + fromStation + '/' + toStation
             + '/' + departDate + '/' + departTime + '/dep')
         return Ticket.get_page_contents(url)
 
     @staticmethod
     def request_page_return(fromStation, toStation, departDate, departTime, returnDate, returnTime):
+        fromStation = fromStation.replace(" ", "")
+        toStation = toStation.replace(" ", "")
         url = ('http://ojp.nationalrail.co.uk/service/timesandfares/' + fromStation + '/' + toStation
             + '/' + departDate + '/' + departTime + '/dep/' + returnDate + '/' + returnTime + '/dep')
         return Ticket.get_page_contents(url)
@@ -73,8 +78,8 @@ class Ticket(object):
             ticket['ticketType'] = str(info['singleJsonFareBreakdowns'][0]['fareTicketType'])#
             ticket['description'] = str(info['singleJsonFareBreakdowns'][0]['fareRouteDescription'])#
             ticket['passenger'] = str(info['singleJsonFareBreakdowns'][0]['passengerType'])#
-            ticket['ticketPrice'] = str(info['singleJsonFareBreakdowns'][0]['ticketPrice']) #
-            ticket['fareProvider'] = str(info['singleJsonFareBreakdowns'][0]['fareProvider'])#
+            ticket['ticketPrice'] = info['singleJsonFareBreakdowns'][0]['ticketPrice']#
+            ticket['fareProvider'] = str(info['singleJsonFareBreakdowns'][0]['tocName'])#
             ticket['restrictions'] = str(info['singleJsonFareBreakdowns'][0]['nreFareCategory'])#
 
             if isReturn:
@@ -90,13 +95,10 @@ class Ticket(object):
                 durationMinutes = str(return_info['jsonJourneyBreakdown']['durationMinutes'])
                 ticket['returnDuration'] = (durationHours + 'h ' + durationMinutes + 'm')
                 ticket['returnChanges'] = str(return_info['jsonJourneyBreakdown']['changes'])
-                if return_info['jsonJourneyBreakdown']['hoverInformation']:
-                    ticket['returnWarning'] = str(return_info['jsonJourneyBreakdown']['hoverInformation'])
-                if return_info['jsonJourneyBreakdown']['statusMessage']:
-                    ticket['returnStatus'] = str(return_info['jsonJourneyBreakdown']['statusMessage'])
-
-                ticket['returnFareProvider'] = str(return_info['returnJsonFareBreakdowns'][0]['fareProvider'])
-                ticket['ticketType'] = str(return_info['returnJsonFareBreakdowns'][0]['fareTicketType'])
+                ticket['returnWarning'] = str(return_info['jsonJourneyBreakdown']['hoverInformation'])
+                ticket['returnStatus'] = str(return_info['jsonJourneyBreakdown']['statusMessage'])
+                ticket['returnFareProvider'] = str(return_info['returnJsonFareBreakdowns'][0]['tocName'])
+                ticket['ticketType'] = return_info['returnJsonFareBreakdowns'][0]['fareTicketType']
                 ticket['returnDescription'] = str(return_info['returnJsonFareBreakdowns'][0]['fareRouteDescription'])
                 ticket['returnPassenger'] = str(return_info['returnJsonFareBreakdowns'][0]['passengerType'])
                 ticket['returnRestrictions'] = str(return_info['returnJsonFareBreakdowns'][0]['nreFareCategory'])
