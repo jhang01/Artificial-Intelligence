@@ -1,6 +1,6 @@
 CREATE TABLE conversationdetails(
     user_input VARCHAR(255) NOT NULL,
-    response VARCHAR(255) NOT NULL
+    response VARCHAR NOT NULL
 )
 
 CREATE TABLE userdata(
