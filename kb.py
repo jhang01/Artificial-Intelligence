@@ -14,20 +14,22 @@ import predicting_location
 from datetime import timedelta
 
 global response
-
+global username
 global error_response
 global user_message
+global hasUsername
 
-
-def set_has_username():
+def set_hasUsername():
     global hasUsername
     hasUsername = False
 
-
-def change_has_username():
+def change_hasUsername():
     global hasUsername
     hasUsername = True
 
+def set_username(user):
+    global username
+    username = user
 
 def set_response(message):
     global response
@@ -155,12 +157,14 @@ class Booking(KnowledgeEngine):
                 set_response(
                     "The name you entered '" + name + "' cannot be assigned as an username. You're now assigned as a guest user.")
                 name = "guest"
-                change_has_username()  # set to true
+                set_username(name)
+                change_hasUsername() # set to true
                 self.declare(Fact(name=name))
                 self.knowledge['name'] = name
             else:
                 set_response("Hello " + name)
-                change_has_username()  # set to true
+                set_username(name)
+                change_hasUsername()
                 self.declare(Fact(name=name))
                 self.knowledge['name'] = name
         else:
@@ -590,8 +594,7 @@ class Booking(KnowledgeEngine):
 # Initialize new booking
 engine = Booking()
 engine.knowledge = {}
-set_has_username()
-global hasUsername
+set_hasUsername()
 
 
 # Set dictionary and run knowledge engine

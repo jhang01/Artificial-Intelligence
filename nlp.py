@@ -74,7 +74,6 @@ def getDate(user):
             # ticketDate = str(ticketDate.day).zfill(2) + str(ticketDate.month).zfill(2) + (str(ticketDate.year)[2:])
             return ticketDate
 
-
     matcher = Matcher(nlp.vocab)
     date1 = [{'TEXT': {'REGEX': r'^\d{1,2}/\d{1,2}/\d{2}(?:\d{2})?$'}}]
     date2 = [{'IS_DIGIT': True}, {'ORTH': '-'}, {'IS_DIGIT': True}, {'ORTH': '-'}, {'IS_DIGIT': True}]
@@ -113,8 +112,6 @@ def getTime(user):
     for ent in user.ents:
         if ent.label_ == "TIME":
             ticket_time = dateparser.parse(ent.text, settings={'PREFER_DATES_FROM': 'future'})
-            print("=============================")
-            print(ticket_time)
             return ticket_time
 
     matcher = Matcher(nlp.vocab)
@@ -124,16 +121,14 @@ def getTime(user):
     matcher.add('time2', [time2])
     matches = matcher(user)
 
-
     for match_id, start, end in matches:
         ticket_time = user[start:end].text
-        n=2
+        n = 2
         if ':' in ticket_time:
             ticket_time = ''.join(i.zfill(2) for i in ticket_time.split(':'))
             ticket_time = ':'.join([ticket_time[i:i + n] for i in range(0, len(ticket_time), n)])
 
         date_plus_tme = "01/01/01 " + ticket_time
-        print(date_plus_tme)
         try:
             ticket_time = datetime.strptime(date_plus_tme, "%d/%m/%y %H:%M")
         except:
@@ -192,7 +187,7 @@ def get_entities(message):
     if str(message) in disagree_input:
         kbdictionary['answer'] = 'false'
 
-    if not kb.hasUsername:
+    if kb.hasUsername is False:
         if len(str(message).split()) == 1 and 'greeting' not in kbdictionary:
             kbdictionary['name'] = str(message)
 
