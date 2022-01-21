@@ -29,8 +29,9 @@ def predict_location(location):
         
         for station in stations:
             stationAbb = data[data['Station'] == station].values[0][2]
-            if uppercase_location in station and uppercase_location[0] in stationAbb:
-                return station, stationAbb, True
+            if len(uppercase_location) > 0:
+                if uppercase_location in station and uppercase_location[0] in stationAbb:
+                    return station, stationAbb, True
         
         return None, None, False
 
