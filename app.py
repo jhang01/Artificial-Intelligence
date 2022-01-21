@@ -6,6 +6,8 @@ import psycopg2
 
 app = Flask(__name__)
 global error
+global username
+
 
 @app.route("/")
 def index():
@@ -16,14 +18,16 @@ def index():
 def get_bot_response():
     what_to_respond()
     response = kb.response
-
+    print(response)
     # Reference from: https://pynative.com/python-postgresql-insert-update-delete-table-data-to-perform-crud-operations/
     try:
         userText = request.args.get('msg')
-        conn = psycopg2.connect(database='AIdatabase', user='postgres', password='account7248', host='127.0.0.1', port='5432')
+        conn = psycopg2.connect(database='AIdatabase', user='postgres', password='account7248', host='127.0.0.1',
+                                port='5432')
         cursor = conn.cursor()
-        query = """INSERT INTO conversationdetails (user_input, response) VALUES (%s, %s) """
-        data = (userText, response)
+        query = """INSERT INTO userdata (username, user_input, response) VALUES (%s, %s, %s) """
+        name = username
+        data = (name, userText, response)
         cursor.execute(query, data)
         conn.commit()
         print("Insert data successfully")
@@ -39,10 +43,20 @@ def get_bot_response():
     return response
 
 
+def set_name(name):
+    global username
+    username = name
+
+
+def get_name():
+    return username
+
+
 def what_to_respond():
     userText = request.args.get('msg')
     kb.set_user_message(userText)
     kb.process_entities(nlp.get_entities(userText))
+
 
 if __name__ == '__main__':
     app.run()

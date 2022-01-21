@@ -3,11 +3,11 @@ from pandas import *
 import difflib
 import unittest
 
-
 data = read_csv("stationabb.csv")
 
 stations = data['Station'].tolist()
 stationsAbb = data['CRS Code']
+
 
 def predict_location(location):
     uppercase_location = location.upper()
@@ -16,7 +16,7 @@ def predict_location(location):
         i = data.loc[data['Station'] == uppercase_location].index[0]
         stationAbb = stationsAbb[i]
         guessed_station = False
-        #probably do not need guessed_station
+        # probably do not need guessed_station
         return uppercase_location, stationAbb, guessed_station
     elif len(close_matches) > 0:
         guessed_station = True
@@ -69,24 +69,24 @@ def predict_location(location):
 
 """
 
+
 class PredictLocationTest(unittest.TestCase):
-    
+
     def test_same_name(self):
         self.assertEqual(predict_location('norwich')[1], 'NRW')
 
     def test_similar_name(self):
         self.assertEqual(predict_location('marke')[1], 'MSK')
-    
+
     def test_similar_name(self):
         self.assertEqual(predict_location('southampton')[1], 'SOA')
-        
+
     def test_not_found(self):
         self.assertEqual(predict_location('blaaa')[1], None)
-    
-       
+
 
 if __name__ == '__main__':
-    #unittest.main()
+    # unittest.main()
     print('input: norwch')
     print(predict_location('norwch'))
     print('-----------------')
