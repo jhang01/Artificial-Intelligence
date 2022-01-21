@@ -5,6 +5,7 @@ from experta.watchers import RULES, AGENDA
 import dateutil.parser
 from datetime import datetime
 
+import delay_prediction
 import kb
 from web_scrapper import Ticket
 import nlp
@@ -577,9 +578,12 @@ class Booking(KnowledgeEngine):
 
     @Rule(Fact(service='predict'),
           Fact(informationGiven=False),
+          Fact(depatureStationAbb=MATCH.depatureStationAbb),
+          Fact(arrivalStationAbb=MATCH.arrivalStationAbb),
           salience=84)
     def predict_delay(self):
-        # To Do: Add Train Delay Prediction Component
+
+        #delay_prediction.get_arrival_time(trained, scale, "", "", "", "int")
         set_response("Response")
         self.knowledge['informationGiven'] = True
         self.declare(Fact(whatsNext=True))
@@ -600,7 +604,7 @@ class Booking(KnowledgeEngine):
 engine = Booking()
 engine.knowledge = {}
 set_hasUsername()
-
+#trained, scale = delay_prediction.train_model()
 
 # Set dictionary and run knowledge engine
 def process_entities(entities):

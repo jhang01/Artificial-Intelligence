@@ -1,12 +1,12 @@
 CREATE TABLE conversationdetails(
     user_input VARCHAR(255) NOT NULL,
-    response VARCHAR(255) NOT NULL
+    response VARCHAR NOT NULL
 )
 
 CREATE TABLE userdata(
     username VARCHAR(50) NOT NULL,
     user_input VARCHAR(255) NOT NULL,
-    response VARCHAR(255) NOT NULL
+    response VARCHAR NOT NULL
 )
 
 CREATE TABLE trainstation(
@@ -104,7 +104,7 @@ CREATE TABLE weather(
 	departTime TIME NOT NULL,
 	isReturn boolean NOT NULL,
 	returnDate date,
-	returnTime TIME
+	returnTime TIME 
 );
 
 --To add the data into the database table, right click on the table created in the schema and choose 

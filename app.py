@@ -3,6 +3,7 @@ from flask import render_template
 import nlp
 import kb
 import psycopg2
+import delay_prediction
 
 app = Flask(__name__)
 global error
