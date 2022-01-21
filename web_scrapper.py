@@ -98,7 +98,7 @@ class Ticket(object):
                 ticket['returnWarning'] = str(return_info['jsonJourneyBreakdown']['hoverInformation'])
                 ticket['returnStatus'] = str(return_info['jsonJourneyBreakdown']['statusMessage'])
                 ticket['returnFareProvider'] = str(return_info['returnJsonFareBreakdowns'][0]['tocName'])
-                ticket['ticketType'] = return_info['returnJsonFareBreakdowns'][0]['fareTicketType']
+                ticket['returnTicketType'] = str(return_info['returnJsonFareBreakdowns'][0]['fareTicketType'])
                 ticket['returnDescription'] = str(return_info['returnJsonFareBreakdowns'][0]['fareRouteDescription'])
                 ticket['returnPassenger'] = str(return_info['returnJsonFareBreakdowns'][0]['passengerType'])
                 ticket['returnRestrictions'] = str(return_info['returnJsonFareBreakdowns'][0]['nreFareCategory'])

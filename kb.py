@@ -56,6 +56,7 @@ class Booking(KnowledgeEngine):
 
         if 'service' in self.knowledge:  # check if an existing service is already active
             if service != 'chat':  # check if service is to chat
+                self.knowledge = {}
                 self.knowledge['service'] = service
                 if name:
                     self.knowledge['name'] = name
@@ -228,7 +229,7 @@ class Booking(KnowledgeEngine):
         if 'dates' in self.dictionary:
             departDate = self.dictionary.get('dates')[0]
             if departDate.date() < datetime.today().date():
-                set_response("Sorry you have entered a time in the past")
+                set_response("Sorry you have entered a date in the past")
                 error = True
             else:
                 self.declare(Fact(leaveDate=departDate))  # stores a datetime version of variable
@@ -257,9 +258,10 @@ class Booking(KnowledgeEngine):
         departTime = 'false'
         if 'times' in self.dictionary:
             departTime = self.dictionary.get('times')[0]
-            if leaveDate.date() == datetime.now().date() and departTime.hour < datetime.now().hour or (
-                    departTime.hour == datetime.now().hour and departTime.min < datetime.now().min):
-                set_response("You have entered a time in the past")
+
+            if leaveDate.date() == datetime.now().date() and (departTime.hour < datetime.now().hour or (
+                    departTime.hour == datetime.now().hour and departTime.minute < datetime.now().minute)):
+                set_response("You have entered a time that has already past. Train depart time must be at the present or future time")
                 error = True
             else:
                 toTime = str(departTime.hour).zfill(2) + str(departTime.minute).zfill(2)
@@ -409,9 +411,10 @@ class Booking(KnowledgeEngine):
           Fact(returnDate=MATCH.returnDate),
           Fact(returnTime=MATCH.returnTime),
           Fact(returnDateDT=MATCH.returnDateDT),
+          Fact(leaveDate=MATCH.leaveDate),
           salience=90)
     def show_return_ticket(self, fromLocation, toLocation, departDate, departTime, returnDate, returnTime,
-                           returnDateDT):
+                           returnDateDT, leaveDate):
         if 'givenTicket' not in self.knowledge:
             ticket = Ticket.get_ticket_return(fromLocation, toLocation, departDate, departTime, returnDate, returnTime)
             if not ticket:
@@ -421,7 +424,26 @@ class Booking(KnowledgeEngine):
             else:
                 self.knowledge['url'] = ticket.get('url')
                 set_response("The cheapest ticket we found is: " + "£{:,.2f}".format(ticket['ticketPrice']))
-                set_response(" Train depart from: " + ticket['returnDepartureStationName'] +
+
+                set_response("Departure ticket information: Train depart from " + ticket['departureStationName'] +
+                             " on: " + leaveDate.strftime('%b %d, %Y') +
+                             " at " + ticket['departureTime'] +
+                             " and arrive in " + ticket['arrivalStationName'] +
+                             " at " + ticket['arrivalTime'] +
+                             ". The total journey time is " + ticket['duration'] +
+                             ". There will be " + ticket['changes'] + " number of changes.")
+                set_response("Additional information: Tickets are for " + ticket['passenger'] +
+                             ". This ticket is an " + ticket["ticketType"] + " ticket" +
+                             ". Route information: " + ticket["description"] +
+                             " Train service provided by " + ticket['fareProvider'] +
+                             ". Ticket Restrictions: " + ticket['restrictions'])
+
+                if ticket['warning'] != "None":
+                    set_response("Warning: " + ticket['warning'])
+                if ticket['status'] != "None":
+                    set_response("Train status: " + ticket['status'])
+
+                set_response("Return ticket information: Train depart from: " + ticket['returnDepartureStationName'] +
                              " on: " + returnDateDT.strftime('%b %d, %Y') +
                              " at " + ticket['returnDepartureTime'] +
                              " and arrive in " + ticket['returnArrivalStationName'] +
@@ -434,10 +456,11 @@ class Booking(KnowledgeEngine):
                              " Train service provided by " + ticket['returnFareProvider'] +
                              ". Ticket Restrictions: " + ticket['returnRestrictions'])
 
-                if ticket['warning'] != "None":
-                    set_response("Warning: " + ticket['warning'])
-                if ticket['status'] != "None":
-                    set_response("Train status: " + ticket['status'])
+                if ticket['returnWarning'] != "None":
+                    set_response("Warning: " + ticket['returnWarning'])
+                if ticket['returnStatus'] != "None":
+                    set_response("Train status: " + ticket['returnStatus'])
+
                 self.declare(Fact(givenTicket=True))
                 self.knowledge['givenTicket'] = True
 
