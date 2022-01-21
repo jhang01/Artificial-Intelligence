@@ -26,12 +26,10 @@ def predict_location(location):
         # probably do not need guessed_station
         return close_matches[0], stationAbb, guessed_station
     else:
-        
         for station in stations:
             stationAbb = data[data['Station'] == station].values[0][2]
             if uppercase_location in station and uppercase_location[0] in stationAbb:
                 return station, stationAbb, True
-        
         return None, None, False
 
 
