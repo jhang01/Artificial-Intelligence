@@ -26,11 +26,12 @@ def predict_location(location):
         # probably do not need guessed_station
         return close_matches[0], stationAbb, guessed_station
     else:
-        length = len(uppercase_location)
+        
         for station in stations:
             stationAbb = data[data['Station'] == station].values[0][2]
             if uppercase_location in station and uppercase_location[0] in stationAbb:
                 return station, stationAbb, True
+        
         return None, None, False
 
 
@@ -98,8 +99,8 @@ if __name__ == '__main__':
     print('input: weymouth')
     print(predict_location('weymouth'))
     print('-----------------')
-    print('input: blaaa')
-    print(predict_location('blaaa'))
+    print('input: sdsdsd')
+    print(predict_location('sdsdsd'))
     print('-----------------')
     print('input: liverpool street')
     print(predict_location('liverpool street'))
