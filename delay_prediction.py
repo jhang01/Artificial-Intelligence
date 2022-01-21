@@ -17,6 +17,7 @@ import json
 import urllib.request
 import urllib.error
 import ssl
+import joblib
 
 
 # Connect to the database
@@ -28,7 +29,7 @@ cursor = conn.cursor()
 
 cursor.execute('SELECT * FROM trainperformance')
 
-data = cursor.fetchall() # Get all the row in traindata
+data = cursor.fetchmany(10000) # Get all the row in traindata
 
 cursor.execute('SELECT * FROM weather2017')
 
@@ -294,12 +295,15 @@ def get_arrival_time(prediction_model, scaler, begin_station, destination_statio
     
     
     a = estimate_time_difference()
-    calculate_arrival_time(begin_station, destination_station, left_time_string, delay_amount, a, prediction_model, scaler)
+    arrival_time = calculate_arrival_time(begin_station, destination_station, left_time_string, delay_amount, a, prediction_model, scaler)
+    return arrival_time
     
 
 if __name__ == '__main__':
     trained, scaler = train_model()
-    get_arrival_time(trained, scaler, 'WDON', 'VAUXHLM', '8:00', 10)
+    joblib.dump(trained, "./random_forest.joblib")
+    #joblib.dump(scaler, )
+    print(get_arrival_time(trained, scaler, 'WDON', 'VAUXHLM', '8:00', 10))
     """
     weather()
     off_peak_times()
