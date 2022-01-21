@@ -50,6 +50,7 @@ class Ticket(object):
         driver.get(url)
         r = driver.page_source
         Ticket.url = url
+        print(url)
         # r = requests.get(url)
         return BeautifulSoup(r, 'html.parser')
 
@@ -85,9 +86,15 @@ class Ticket(object):
             ticket['restrictions'] = str(info['singleJsonFareBreakdowns'][0]['nreFareCategory'])  #
 
             if isReturn:
-                return_ticket_regex = re.compile('.*return-only default-select.*')  # gets selected default
-                return_ticket = page_contents.find('div', {"class": return_ticket_regex})
-                return_info = json.loads(return_ticket.find('script', {'type': 'text/javascript'}).text)
+                return_content = page_contents.find('table', id='ift')
+                if return_content.find('td', class_='fare has-cheapest'): #if has cheapest
+                    return_cheapest_ticket = return_content.find('td', class_='fare has-cheapest')
+                    return_info = json.loads(return_cheapest_ticket.find('script', {'type': 'application/json'}).text)
+                else:
+                    return_ticket_regex = re.compile('.*return-only default-select.*')  # gets selected default
+                    return_cheapest_ticket = page_contents.find('div', {"class": return_ticket_regex})
+                    return_info = json.loads(return_cheapest_ticket.find('script', {'type': 'text/javascript'}).text)
+
                 ticket['returnDepartureStationName'] = str(return_info['jsonJourneyBreakdown']['departureStationName'])
                 ticket['returnArrivalStationName'] = str(return_info['jsonJourneyBreakdown']['arrivalStationName'])
                 ticket['returnDepartureTime'] = str(return_info['jsonJourneyBreakdown']['departureTime'])

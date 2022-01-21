@@ -22,7 +22,7 @@ import ssl
 # Connect to the database
 # The database create table is in a text file called database, just copy and run it in pgadmin
 # Need to create a database in pgadmin first and change these parameters into your own details to allow succesful connection
-conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow',host='127.0.0.1', port='5432')
+conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
 # Create a cursor
 cursor = conn.cursor()
 
