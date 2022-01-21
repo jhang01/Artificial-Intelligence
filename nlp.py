@@ -88,17 +88,23 @@ def getDate(user):
                 n = 2
                 firstTwoYearDigit = str(datetime.today().year)
                 firstTwoYearDigit = firstTwoYearDigit[0:2]
+                lastTwoYearDigit = ticketDate[-2:]
                 if "/" in ticketDate:
                     ticketDate = ''.join(i.zfill(2) for i in ticketDate.split('/'))
                     ticketDate = '/'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
                 elif "-" in ticketDate:
                     ticketDate = ''.join(i.zfill(2) for i in ticketDate.split('-'))
-                    ticketDate = '-'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
+                    ticketDate = '/'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
                 elif "." in ticketDate:
                     ticketDate = ''.join(i.zfill(2) for i in ticketDate.split('.'))
-                    ticketDate = '.'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
-                ticketDate = ticketDate[:-2] + firstTwoYearDigit + ticketDate[-2] + ticketDate[-1]
-                ticketDate = datetime.strptime(ticketDate, "%d/%m/%Y")
+                    ticketDate = '/'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
+                ticketDate = ticketDate[0:6] + firstTwoYearDigit + lastTwoYearDigit
+                try:
+                    print(ticketDate)
+                    ticketDate = datetime.strptime(ticketDate, "%d/%m/%Y")
+                except:
+                    print("Failed to convert ticket")
+                    ticketDate = None
 
     return ticketDate
 
