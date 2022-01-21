@@ -66,6 +66,7 @@ def pos(doc):
 def getDate(user):
     # Reference from : https://stackoverflow.com/questions/67113389/spacy-matcher-date-pattern-will-match-hyphens-but-not-forward-slashes
     ticketDate = None
+
     for ent in user.ents:
         if ent.label_ == "DATE":
             ticketDate = dateparser.parse(ent.text, settings={'DATE_ORDER': 'DMY'},
@@ -170,9 +171,9 @@ def getcity(user):
     return departure, arrival
 
 
-# def getSimilarity(rule, user):
-#     similarity = rule.similarity(user)
-#     return similarity
+def getSimilarity(rule, user):
+    similarity = rule.similarity(user)
+    return similarity
 
 
 def get_entities(message):
