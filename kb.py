@@ -372,10 +372,12 @@ class Booking(KnowledgeEngine):
           Fact(departDate=MATCH.departDate),
           Fact(departTime=MATCH.departTime),
           Fact(leaveDate=MATCH.leaveDate),
+          Fact(fromLocationAbb=MATCH.fromLocationAbb),
+          Fact(toLocationAbb=MATCH.toLocationAbb),
           salience=91)
-    def show_single_ticket(self, fromLocation, toLocation, departDate, departTime, leaveDate):
+    def show_single_ticket(self, fromLocation, toLocation, departDate, departTime, leaveDate, fromLocationAbb, toLocationAbb):
         if 'givenTicket' not in self.knowledge:
-            ticket = Ticket.get_ticket_single(fromLocation, toLocation, departDate, departTime)
+            ticket = Ticket.get_ticket_single(fromLocationAbb, toLocationAbb, departDate, departTime)
             if not ticket:
                 set_response(
                     "Sorry we failed to find an available ticket for you based on the information you have provided")
@@ -416,11 +418,13 @@ class Booking(KnowledgeEngine):
           Fact(returnTime=MATCH.returnTime),
           Fact(returnDateDT=MATCH.returnDateDT),
           Fact(leaveDate=MATCH.leaveDate),
+          Fact(fromLocationAbb=MATCH.fromLocationAbb),
+          Fact(toLocationAbb=MATCH.toLocationAbb),
           salience=90)
     def show_return_ticket(self, fromLocation, toLocation, departDate, departTime, returnDate, returnTime,
-                           returnDateDT, leaveDate):
+                           returnDateDT, leaveDate, fromLocationAbb, toLocationAbb):
         if 'givenTicket' not in self.knowledge:
-            ticket = Ticket.get_ticket_return(fromLocation, toLocation, departDate, departTime, returnDate, returnTime)
+            ticket = Ticket.get_ticket_return(fromLocationAbb, toLocationAbb, departDate, departTime, returnDate, returnTime)
             if not ticket:
                 set_response("Sorry we failed to find a ticket based on the information you have provided")
                 self.declare(Fact(givenTicket=False))
@@ -477,6 +481,7 @@ class Booking(KnowledgeEngine):
             if self.dictionary.get('answer') == 'true':
                 set_response("Please click on the following link to book your ticket")
                 set_response("sendHyperLink:" + self.knowledge.get('url'))
+
             self.knowledge['givenTicket'] = False
             self.declare(Fact(whatsNext=True))
             self.knowledge['whatsNext'] = True
