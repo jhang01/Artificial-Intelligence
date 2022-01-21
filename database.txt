@@ -104,7 +104,7 @@ CREATE TABLE weather(
 	departTime TIME NOT NULL,
 	isReturn boolean NOT NULL,
 	returnDate date,
-	returnTime TIME
+	returnTime TIME 
 );
 
 --To add the data into the database table, right click on the table created in the schema and choose 
