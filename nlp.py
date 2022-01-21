@@ -72,39 +72,38 @@ def getDate(user):
             ticketDate = dateparser.parse(ent.text, settings={'DATE_ORDER': 'DMY'},
                                           languages=['en'])  # uk chatbot so use DMY
             # ticketDate = str(ticketDate.day).zfill(2) + str(ticketDate.month).zfill(2) + (str(ticketDate.year)[2:])
-        else:
-            matcher = Matcher(nlp.vocab)
-            date1 = [{'TEXT': {'REGEX': r'^\d{1,2}/\d{1,2}/\d{2}(?:\d{2})?$'}}]
-            date2 = [{'IS_DIGIT': True}, {'ORTH': '-'}, {'IS_DIGIT': True}, {'ORTH': '-'}, {'IS_DIGIT': True}]
-            date3 = [{'TEXT': {'REGEX': r'^\d{1,2}.\d{1,2}.\d{2}(?:\d{2})?$'}}]
+    matcher = Matcher(nlp.vocab)
+    date1 = [{'TEXT': {'REGEX': r'^\d{1,2}/\d{1,2}/\d{2}(?:\d{2})?$'}}]
+    date2 = [{'IS_DIGIT': True}, {'ORTH': '-'}, {'IS_DIGIT': True}, {'ORTH': '-'}, {'IS_DIGIT': True}]
+    date3 = [{'TEXT': {'REGEX': r'^\d{1,2}.\d{1,2}.\d{2}(?:\d{2})?$'}}]
 
-            matcher.add('date1', [date1])
-            matcher.add('date2', [date2])
-            matcher.add('date3', [date3])
-            matches = matcher(user)
+    matcher.add('date1', [date1])
+    matcher.add('date2', [date2])
+    matcher.add('date3', [date3])
+    matches = matcher(user)
 
-            for match_id, start, end in matches:
-                ticketDate = user[start:end].text
-                n = 2
-                firstTwoYearDigit = str(datetime.today().year)
-                firstTwoYearDigit = firstTwoYearDigit[0:2]
-                lastTwoYearDigit = ticketDate[-2:]
-                if "/" in ticketDate:
-                    ticketDate = ''.join(i.zfill(2) for i in ticketDate.split('/'))
-                    ticketDate = '/'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
-                elif "-" in ticketDate:
-                    ticketDate = ''.join(i.zfill(2) for i in ticketDate.split('-'))
-                    ticketDate = '/'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
-                elif "." in ticketDate:
-                    ticketDate = ''.join(i.zfill(2) for i in ticketDate.split('.'))
-                    ticketDate = '/'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
-                ticketDate = ticketDate[0:6] + firstTwoYearDigit + lastTwoYearDigit
-                try:
-                    print(ticketDate)
-                    ticketDate = datetime.strptime(ticketDate, "%d/%m/%Y")
-                except:
-                    print("Failed to convert ticket")
-                    ticketDate = None
+    for match_id, start, end in matches:
+        ticketDate = user[start:end].text
+        n = 2
+        firstTwoYearDigit = str(datetime.today().year)
+        firstTwoYearDigit = firstTwoYearDigit[0:2]
+        lastTwoYearDigit = ticketDate[-2:]
+        if "/" in ticketDate:
+            ticketDate = ''.join(i.zfill(2) for i in ticketDate.split('/'))
+            ticketDate = '/'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
+        elif "-" in ticketDate:
+            ticketDate = ''.join(i.zfill(2) for i in ticketDate.split('-'))
+            ticketDate = '/'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
+        elif "." in ticketDate:
+            ticketDate = ''.join(i.zfill(2) for i in ticketDate.split('.'))
+            ticketDate = '/'.join([ticketDate[i:i + n] for i in range(0, len(ticketDate), n)])
+        ticketDate = ticketDate[0:6] + firstTwoYearDigit + lastTwoYearDigit
+        try:
+            print(ticketDate)
+            ticketDate = datetime.strptime(ticketDate, "%d/%m/%Y")
+        except:
+            print("Failed to convert ticket")
+            ticketDate = None
 
     return ticketDate
 
@@ -114,15 +113,17 @@ def getTime(user):
     for ent in user.ents:
         if ent.label_ == "TIME":
             ticket_time = dateparser.parse(ent.text, settings={'PREFER_DATES_FROM': 'future'})
-        else:
-            matcher = Matcher(nlp.vocab)
-            time = [{'IS_DIGIT': True}, {'ORTH': ':'}, {'IS_DIGIT': True}]
-            matcher.add('time', [time])
-            matches = matcher(user)
 
-            for match_id, start, end in matches:
-                ticket_time = user[start:end].text
-                ticket_time = datetime.combine(datetime.today(), ticket_time)
+    matcher = Matcher(nlp.vocab)
+    time = [{'IS_DIGIT': True}, {'ORTH': ':'}, {'IS_DIGIT': True}]
+    time2 = [{'TEXT': {'REGEX': r'^\d{1,2}:\d{1,2}$'}}]
+    matcher.add('time', [time])
+    matcher.add('time2', [time2])
+    matches = matcher(user)
+
+    for match_id, start, end in matches:
+        ticket_time = user[start:end].text
+        ticket_time = datetime.combine(datetime.today(), ticket_time)
 
     return ticket_time
 
@@ -156,9 +157,9 @@ def getcity(user):
     return departure, arrival
 
 
-# def getSimilarity(rule, user):
-#     similarity = rule.similarity(user)
-#     return similarity
+def getSimilarity(rule, user):
+    similarity = rule.similarity(user)
+    return similarity
 
 
 def get_entities(message):
