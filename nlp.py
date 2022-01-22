@@ -161,11 +161,10 @@ def getcity(user):
     # for match_id, start, end in matches:
     #     departure = user[start:end].text
 
-    if " from " in (" " + user + " ") and " to " in (" " + user + " "):
-        dleft = 'from'
-        dright = 'to'
+    if " from " in (" " + str(user) + " ") and " to " in (" " + str(user) + " "):
+        dleft = 'from '
+        dright = ' to '
         departure = (user[user.index(dleft) + len(dleft):user.index(dright)])
-
 
     # matcher2 = Matcher(nlp.vocab)
     # toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
@@ -177,10 +176,8 @@ def getcity(user):
     # for match_id, start, end in matches2:
     #     arrival = user[start:end].text
 
-    if " to " in (" " + user + " "):
-        arrival = user.partition('to')[2]
-
-    print(departure, arrival)
+    if " to " in (" " + str(user) + " "):
+        arrival = user.partition(' to ')[2]
 
     return departure, arrival
 
@@ -213,9 +210,10 @@ def get_entities(message):
 
     locations = []
     locations_abbreviation = []
-    fromStation, toStation = getcity(str(message))
+    fromStation, toStation = getcity(message)
 
     if fromStation:
+        fromStation = str(fromStation[5:])
         station_name, station_abbreviation, guessed = predicting_location.predict_location(fromStation)
         if station_name:
             locations.append(station_name)
@@ -226,6 +224,7 @@ def get_entities(message):
                 kbdictionary['guessedFrom'] = 'false'
 
     if toStation:
+        toStation = str(toStation[3:])
         station_name, station_abbreviation, guessed = predicting_location.predict_location(toStation)
         if station_name:
             locations.append(station_name)
