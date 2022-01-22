@@ -29,7 +29,7 @@ cursor = conn.cursor()
 
 cursor.execute('SELECT * FROM trainperformance')
 
-data = cursor.fetchall() # Get all the row in traindata
+data = cursor.fetchmany(32000) # Get all the row in traindata
 
 cursor.execute('SELECT * FROM weather2017')
 
@@ -93,7 +93,7 @@ def calculate_arrival_time(begin_station, destination_station, left_time_date, d
     print(time_difference_df)
     mins = int(sum(time_difference_df['Minutes'].iloc[from_index:to_index + 1]))
 
-    estimate_time = left_time_date + timedelta(minutes=mins + delay_amount)
+    estimate_time = left_time_date + timedelta(minutes=mins) + delay_amount
 
     ssl._create_default_https_context = ssl._create_unverified_context
     response = urllib.request.urlopen('https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/southampton/today?unitGroup=metric&key=LDM4JXNEB4J6RUS6N28ZDAWLM&contentType=json')
@@ -292,10 +292,22 @@ if __name__ == '__main__':
     #trained, scaler = train_model()
     #joblib.dump(trained, "./random_forest.joblib")
     #joblib.dump(scaler, "./scaler.joblib")
+    """
+    weather()
+    off_peak_times()
+    seasons()
+
+    print(df.loc[[18,31781]])
+    #print(df.iloc[21,22,23,24])
+    """
+    """
+    delay = timedelta(minutes=120)
+    
     loaded_rf = joblib.load("./random_forest.joblib")
     scaler = joblib.load("./scaler.joblib")
     x = datetime(2000, 10,10,8,10)
-    print(get_arrival_time(loaded_rf, scaler, 'WDON', 'VAUXHLM', x, 10))
+    print(get_arrival_time(loaded_rf, scaler, 'WDON', 'VAUXHLM', x, delay))
+    """
     """
     weather()
     off_peak_times()
