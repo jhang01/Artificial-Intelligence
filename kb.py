@@ -6,7 +6,7 @@ import dateutil.parser
 from datetime import datetime
 
 import delay_prediction
-import kb
+
 from web_scrapper import Ticket
 import nlp
 from random import choice
@@ -53,7 +53,11 @@ class Booking(KnowledgeEngine):
                 print("Reseted chatbot")
                 self.knowledge = {}
                 self.dictionary['service'] = 'chat'
+                set_hasUsername()
+                for f in self.facts:
+                    self.retract(f)
 
+        print(self.facts)
         # Get Service
         service = self.dictionary.get('service')  # get service stored
         name = self.knowledge.get('name')
@@ -162,7 +166,7 @@ class Booking(KnowledgeEngine):
         if 'name' in self.dictionary:
             name = self.dictionary.get('name')
             name = name.replace(" ", "")
-            if (name in nlp.booking_input) or (name in nlp.delay_input):  # need to add duplicate for database
+            if (name in nlp.booking_input) or (name in nlp.delay_input) or (name in nlp.reset_input) or (name in nlp.ticketInfo_input):  # need to add duplicate for database
                 set_response(
                     "The name you entered '" + name + "' cannot be assigned as an username. You're now assigned as a guest user.")
                 name = "guest"
@@ -249,6 +253,7 @@ class Booking(KnowledgeEngine):
                 toDate = str(departDate.day).zfill(2) + str(departDate.month).zfill(2) + (str(departDate.year)[2:])
                 self.declare(Fact(departDate=toDate))
                 self.knowledge['departDate'] = toDate
+                del self.dictionary['dates']
 
         if self.knowledge['question'] == 'ask_depart_date' and departDate == 'false' and not error:
             set_response("Please provide a valid date")
@@ -337,6 +342,7 @@ class Booking(KnowledgeEngine):
                 toDate = str(returnDate.day).zfill(2) + str(returnDate.month).zfill(2) + (str(returnDate.year)[2:])
                 self.declare(Fact(returnDate=toDate))
                 self.knowledge['returnDate'] = toDate
+                del self.dictionary['dates']
 
         if self.knowledge['question'] == 'ask_return_date' and returnDate == 'false' and not error:
             set_response("Please enter a valid date")
@@ -363,6 +369,7 @@ class Booking(KnowledgeEngine):
             toTime = str(returnTime.hour).zfill(2) + str(returnTime.minute).zfill(2)
             self.declare(Fact(returnTime=toTime))
             self.knowledge['returnTime'] = toTime
+            del self.dictionary['times']
         else:
             if self.knowledge['question'] == 'ask_return_time':
                 set_response("Please enter a valid time")
@@ -494,7 +501,6 @@ class Booking(KnowledgeEngine):
             self.knowledge['givenTicket'] = False
             self.declare(Fact(whatsNext=True))
             self.knowledge['whatsNext'] = True
-
             del self.dictionary['answer']
         else:
             if self.knowledge['question'] == 'confirm_booking':
@@ -543,10 +549,10 @@ class Booking(KnowledgeEngine):
             del self.dictionary['times']
         else:
             if self.knowledge['question'] == 'ask_predict_depart_time':
-                set_response("ask predict time")
+                set_response("Please provide a valid depart time")
             else:
                 self.knowledge['question'] = 'ask_predict_depart_time'
-            set_response("Predict depart time")
+            set_response("What time did you train depart?")
             self.declare(Fact(isQuestion=True))
 
     # Ask Delay
@@ -557,6 +563,9 @@ class Booking(KnowledgeEngine):
     def ask_predict_delay(self):
         if 'times' in self.dictionary:
             time = self.dictionary.get('times')[0]
+            minutes = time.minute
+            if time.hour > 0:
+                minutes += time.hour*60
             self.declare(Fact(predictDelay=time))
             self.knowledge['predictDelay'] = time
             self.declare(Fact(informationGiven=False))
@@ -574,8 +583,10 @@ class Booking(KnowledgeEngine):
           Fact(informationGiven=False),
           Fact(depatureStationAbb=MATCH.depatureStationAbb),
           Fact(arrivalStationAbb=MATCH.arrivalStationAbb),
+          Fact(predictDepartTime=MATCH.predictDepartTime),
+          Fact(predictDelay=MATCH.predictDelay),
           salience=84)
-    def predict_delay(self):
+    def predict_delay(self, depatureStationAbb, arrivalStationAbb, predictDepartTime, predictDelay):
         #delay_prediction.get_arrival_time(trained, scale, "", "", "", "int")
         set_response("Response")
         self.knowledge['informationGiven'] = True

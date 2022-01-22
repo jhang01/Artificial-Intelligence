@@ -192,6 +192,7 @@ def getSimilarity(rule, user):
 
 def get_entities(message):
     message = message.lower()
+    message = message.strip()
     message = nlp(message)
 
     kbdictionary = {}
@@ -266,6 +267,9 @@ def get_entities(message):
 
         if token in {'return', 'returns'}:
             kbdictionary['return'] = 'true'
+
+        if token in reset_input:
+            kbdictionary['reset'] = 'true'
 
     print(kbdictionary)
 
