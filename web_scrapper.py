@@ -57,6 +57,9 @@ class Ticket(object):
     @staticmethod
     def get_cheapest_ticket(page_contents, isReturn, departDate, returnDate):
         try:
+            cheapest = page_contents.find('button', id='buyCheapestButton')
+            regex_cheapest = re.findall(r'\d{1,3}\.\d{1,2}', cheapest.text)
+
             cheapest_ticket = page_contents.find('td', class_='fare has-cheapest')
             info = json.loads(cheapest_ticket.find('script', {'type': 'application/json'}).text)
 
@@ -81,13 +84,13 @@ class Ticket(object):
             ticket['ticketType'] = str(info['singleJsonFareBreakdowns'][0]['fareTicketType'])  #
             ticket['description'] = str(info['singleJsonFareBreakdowns'][0]['fareRouteDescription'])  #
             ticket['passenger'] = str(info['singleJsonFareBreakdowns'][0]['passengerType'])  #
-            ticket['ticketPrice'] = info['singleJsonFareBreakdowns'][0]['ticketPrice']  #
+            ticket['ticketPrice'] = float(regex_cheapest[0])#
             ticket['fareProvider'] = str(info['singleJsonFareBreakdowns'][0]['tocName'])  #
             ticket['restrictions'] = str(info['singleJsonFareBreakdowns'][0]['nreFareCategory'])  #
 
             if isReturn:
                 return_content = page_contents.find('table', id='ift')
-                if return_content.find('td', class_='fare has-cheapest'): #if has cheapest
+                if return_content.find('td', class_='fare has-cheapest'):  # if has cheapest
                     return_cheapest_ticket = return_content.find('td', class_='fare has-cheapest')
                     return_info = json.loads(return_cheapest_ticket.find('script', {'type': 'application/json'}).text)
                 else:

@@ -1,9 +1,12 @@
 import random
 
+import joblib
+import psycopg2
 from experta import *
 from experta.watchers import RULES, AGENDA
 import dateutil.parser
 from datetime import datetime
+from datetime import timedelta
 
 import delay_prediction
 
@@ -20,17 +23,21 @@ global error_response
 global user_message
 global hasUsername
 
+
 def set_hasUsername():
     global hasUsername
     hasUsername = False
+
 
 def change_hasUsername():
     global hasUsername
     hasUsername = True
 
+
 def set_username(user):
     global username
     username = user
+
 
 def set_response(message):
     global response
@@ -56,8 +63,8 @@ class Booking(KnowledgeEngine):
                 set_hasUsername()
                 for f in self.facts:
                     self.retract(f)
-
-        print(self.facts)
+        for i in self.facts:
+            print(i)
         # Get Service
         service = self.dictionary.get('service')  # get service stored
         name = self.knowledge.get('name')
@@ -151,6 +158,14 @@ class Booking(KnowledgeEngine):
         if 'informationGiven' in self.knowledge:
             print(self.knowledge.get('informationGiven'))
             yield Fact(informationGiven=self.knowledge.get('informationGiven'))
+        if 'ticketInfoGiven' in self.knowledge:
+            print(self.knowledge.get('ticketInfoGiven'))
+            yield Fact(ticketInfoGiven=self.knowledge.get('ticketInfoGiven'))
+
+
+        if 'userData' in self.knowledge:
+            print(self.knowledge.get('userData'))
+            yield Fact(userData=self.knowledge.get('userData'))
 
     @Rule(NOT(Fact(service='chat')),
           salience=100)  # higher number priority
@@ -166,12 +181,13 @@ class Booking(KnowledgeEngine):
         if 'name' in self.dictionary:
             name = self.dictionary.get('name')
             name = name.replace(" ", "")
-            if (name in nlp.booking_input) or (name in nlp.delay_input) or (name in nlp.reset_input) or (name in nlp.ticketInfo_input):  # need to add duplicate for database
+            if (name in nlp.booking_input) or (name in nlp.delay_input) or (name in nlp.reset_input) or (
+                    name in nlp.ticketInfo_input):  # need to add duplicate for database
                 set_response(
                     "The name you entered '" + name + "' cannot be assigned as an username. You're now assigned as a guest user.")
                 name = "guest"
                 set_username(name)
-                change_hasUsername() # set to true
+                change_hasUsername()  # set to true
                 self.declare(Fact(name=name))
                 self.knowledge['name'] = name
             else:
@@ -183,13 +199,11 @@ class Booking(KnowledgeEngine):
         else:
             if self.knowledge['question'] == 'ask_name':
                 set_response("Hello again :)")
-                # setresponse for duplicate username
             else:
                 self.knowledge['question'] = 'ask_name'
                 set_response("Hi :)")
             set_response(nlp.greeting_output)
             self.declare(Fact(isQuestion=True))
-
 
     # Ask Service
     @Rule(Fact(service='chat'),
@@ -233,6 +247,8 @@ class Booking(KnowledgeEngine):
                 self.knowledge['question'] = 'ask_location'
             set_response("Please specify where you would like to travel from and to")
             self.declare(Fact(isQuestion=True))
+
+    #confirm location
 
     # Ask Depart Date
     @Rule(Fact(service='book'),
@@ -278,7 +294,8 @@ class Booking(KnowledgeEngine):
 
             if leaveDate.date() == datetime.now().date() and (departTime.hour < datetime.now().hour or (
                     departTime.hour == datetime.now().hour and departTime.minute < datetime.now().minute)):
-                set_response("You have entered a time that has already past. Train depart time must be at the present or future time")
+                set_response(
+                    "You have entered a time that has already past. Train depart time must be at the present or future time")
                 error = True
             else:
                 toTime = str(departTime.hour).zfill(2) + str(departTime.minute).zfill(2)
@@ -390,7 +407,8 @@ class Booking(KnowledgeEngine):
           Fact(fromLocationAbb=MATCH.fromLocationAbb),
           Fact(toLocationAbb=MATCH.toLocationAbb),
           salience=91)
-    def show_single_ticket(self, fromLocation, toLocation, departDate, departTime, leaveDate, fromLocationAbb, toLocationAbb):
+    def show_single_ticket(self, fromLocation, toLocation, departDate, departTime, leaveDate, fromLocationAbb,
+                           toLocationAbb):
         if 'givenTicket' not in self.knowledge:
             ticket = Ticket.get_ticket_single(fromLocationAbb, toLocationAbb, departDate, departTime)
             if not ticket:
@@ -439,7 +457,8 @@ class Booking(KnowledgeEngine):
     def show_return_ticket(self, fromLocation, toLocation, departDate, departTime, returnDate, returnTime,
                            returnDateDT, leaveDate, fromLocationAbb, toLocationAbb):
         if 'givenTicket' not in self.knowledge:
-            ticket = Ticket.get_ticket_return(fromLocationAbb, toLocationAbb, departDate, departTime, returnDate, returnTime)
+            ticket = Ticket.get_ticket_return(fromLocationAbb, toLocationAbb, departDate, departTime, returnDate,
+                                              returnTime)
             if not ticket:
                 set_response("Sorry we failed to find a ticket based on the information you have provided")
                 self.declare(Fact(givenTicket=False))
@@ -519,18 +538,23 @@ class Booking(KnowledgeEngine):
         if 'location' in self.dictionary and len(self.dictionary.get('location')) > 1:
             location = self.dictionary.get('location')
             station_abbreviation = self.dictionary.get('station_abbreviation')
+
             self.declare(Fact(predictFromLocation=location[0]))
             self.knowledge['predictFromLocation'] = location[0]
             self.declare(Fact(predictToLocation=location[1]))
             self.knowledge['predictToLocation'] = location[1]
+
             self.declare(Fact(predictFromLocationAbb=station_abbreviation[0]))
-            self.knowledge['preidctFromLocationAbb'] = station_abbreviation[0]
+            self.knowledge['predictFromLocationAbb'] = station_abbreviation[0]
             self.declare(Fact(predictToLocationAbb=station_abbreviation[1]))
             self.knowledge['predictToLocationAbb'] = station_abbreviation[1]
+
             del self.dictionary['location']
+            del self.dictionary['station_abbreviation']
         else:
             if self.knowledge['question'] == 'ask_predict_location':
-                set_response("Please specify where you would like to travel from and to, for example 'from london liverpool street to cambridge'")
+                set_response(
+                    "Please specify where you would like to travel from and to, for example 'from london liverpool street to cambridge'")
             else:
                 self.knowledge['question'] = 'ask_predict_location'
             set_response("Where is the train going from and to.")
@@ -552,24 +576,27 @@ class Booking(KnowledgeEngine):
                 set_response("Please provide a valid depart time")
             else:
                 self.knowledge['question'] = 'ask_predict_depart_time'
-            set_response("What time did you train depart?")
+            set_response("What time did the train depart?")
             self.declare(Fact(isQuestion=True))
 
     # Ask Delay
     @Rule(Fact(service='predict'),
+          Fact(predictDepartTime=MATCH.predictDepartTime),
           NOT(Fact(isQuestion=W())),
           NOT(Fact(predictDelay=W())),
           salience=85)
-    def ask_predict_delay(self):
+    def ask_predict_delay(self, predictDepartTime):
         if 'times' in self.dictionary:
             time = self.dictionary.get('times')[0]
-            minutes = time.minute
-            if time.hour > 0:
-                minutes += time.hour*60
+            time = datetime.now() - time
+            print(time + timedelta(days=1))
+            print(type(time))
+            time = abs(time - timedelta())
+            print(time)
+
+            #print(minutes)
             self.declare(Fact(predictDelay=time))
             self.knowledge['predictDelay'] = time
-            self.declare(Fact(informationGiven=False))
-            self.knowledge['informationGiven'] = False
             del self.dictionary['times']
         else:
             if self.knowledge['question'] == 'ask_predict_delay':
@@ -580,18 +607,76 @@ class Booking(KnowledgeEngine):
             self.declare(Fact(isQuestion=True))
 
     @Rule(Fact(service='predict'),
-          Fact(informationGiven=False),
-          Fact(depatureStationAbb=MATCH.depatureStationAbb),
-          Fact(arrivalStationAbb=MATCH.arrivalStationAbb),
+          NOT(Fact(informationGiven=W())),
+          Fact(predictFromLocationAbb=MATCH.predictFromLocationAbb),
+          Fact(predictToLocationAbb=MATCH.predictToLocationAbb),
           Fact(predictDepartTime=MATCH.predictDepartTime),
           Fact(predictDelay=MATCH.predictDelay),
           salience=84)
-    def predict_delay(self, depatureStationAbb, arrivalStationAbb, predictDepartTime, predictDelay):
-        #delay_prediction.get_arrival_time(trained, scale, "", "", "", "int")
-        set_response("Response")
-        self.knowledge['informationGiven'] = True
-        self.declare(Fact(whatsNext=True))
-        self.knowledge['whatsNext'] = True
+    def predict_delay(self, predictFromLocationAbb, predictToLocationAbb, predictDepartTime, predictDelay):
+        print(predictFromLocationAbb, predictToLocationAbb, predictDepartTime, predictDelay)
+        delay_time = delay_prediction.get_arrival_time(loaded_rf, scale, predictFromLocationAbb, predictToLocationAbb,
+                                                       predictDepartTime, predictDelay)
+        if not delay_time:
+            set_response("Failed to make prediction based on information provided")
+        else:
+            set_response("Delay time:" + delay_time)
+            self.knowledge['informationGiven'] = True
+            self.declare(Fact(informationGiven=True))
+            self.declare(Fact(whatsNext=True))
+            self.knowledge['whatsNext'] = True
+
+
+    @Rule(Fact(service='info'),
+          NOT(Fact(ticketInfoGiven=W())),
+          NOT(Fact(name='guest')),
+          Fact(name=W()),
+          salience=83)
+    def find_user_info(self):
+        userdata = []
+        try:
+            name = self.knowledge.get('name')
+            conn = psycopg2.connect(database='AIdatabase', user='postgres', password='account7248', host='127.0.0.1', port='5432')
+            cursor = conn.cursor()
+            query = """SELECT * FROM userdata WHERE username = %s"""
+            cursor.execute(query, (name,))
+            data = cursor.fetchall()
+
+            cleaned_data = []
+            for row in data:
+                cleaned_data.append(row[-1])
+            cleaned_data2 = []
+            for column in cleaned_data:
+                cleaned_data2.append(column.replace("@/", " "))
+            userdata = cleaned_data2
+            self.knowledge['userData'] = cleaned_data2
+            self.declare(Fact(userData = cleaned_data2))
+            print(cleaned_data2)
+        except (Exception, psycopg2.Error) as error:
+            print("Failed executing query", error)
+        finally:
+            if conn:
+                cursor.close()
+                conn.close()
+                print("Database connection close")
+
+        last_ticket = ""
+        listofticketLinks = []
+        if not userdata:
+            set_response("Sorry we can not find information based on the username" + self.knowledge['name'])
+        else:
+            index = 0
+            for i in reversed(userdata):
+                index -= 1
+                if "sendHyperLink" in i:
+                    listofticketLinks.append(i)
+                if "The cheapest ticket we found is:" in i:
+                    i = i.replace("Do you want to book this train ticket?", "")
+                    last_ticket = i
+            set_response(last_ticket)
+            self.knowledge['ticketInfoGiven'] = True
+            self.declare(Fact(ticketInfoGiven=True))
+            self.declare(Fact(whatsNext=True))
 
     # Ask What's Next
     @Rule(Fact(whatsNext=True),
@@ -603,23 +688,26 @@ class Booking(KnowledgeEngine):
                              "type 'info'. To make another booking "
                              "type 'book'.")
             elif self.dictionary.get('answer') == 'false':
-                set_response("Goodbye.") # end convo here
+                set_response("Goodbye.")  # end convo here
                 self.dictionary['reset'] = 'true'
             del self.dictionary['answer']
         else:
             if self.knowledge['question'] == 'whats_next':
-                set_response("You can book another ticket, check delays or view ticket information. For delay prediction type 'delay'. For ticket information type 'info'. To make another booking type'book'.")
+                set_response(
+                    "You can book another ticket, check delays or view ticket information. For delay prediction type 'delay'. For ticket information type 'info'. To make another booking type'book'.")
             else:
                 self.knowledge['question'] = 'whats_next'
             set_response("Is there anything else I can help you with?")
-
-
 
 # Initialize new booking
 engine = Booking()
 engine.knowledge = {}
 set_hasUsername()
-#trained, scale = delay_prediction.train_model()
+loaded_rf = joblib.load("./random_forest.joblib")
+scale = joblib.load("./scaler.joblib")
+
+
+# trained, scale = delay_prediction.train_model()
 
 # Set dictionary and run knowledge engine
 def process_entities(entities):
