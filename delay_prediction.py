@@ -22,8 +22,8 @@ import joblib
 # Connect to the database
 # The database create table is in a text file called database, just copy and run it in pgadmin
 # Need to create a database in pgadmin first and change these parameters into your own details to allow succesful connection
-#conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
-conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
+conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
+#conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
 # Create a cursor
 cursor = conn.cursor()
 
@@ -85,8 +85,8 @@ def estimate_time_difference():
     time_difference_df = pd.DataFrame(time_difference)
     return time_difference_df
 
-def calculate_arrival_time(begin_station, destination_station, left_time_string, delay_amount, time_difference_df, prediction_model, scaler):
-    left_time_date = datetime.strptime(left_time_string, '%H:%M')
+def calculate_arrival_time(begin_station, destination_station, left_time_date, delay_amount, time_difference_df, prediction_model, scaler):
+    #left_time_date = datetime.strptime(left_time_string, '%H:%M')
 
     from_index = time_difference_df.index[time_difference_df['From'] == begin_station].tolist()[0]
     to_index = time_difference_df.index[time_difference_df['To'] == destination_station].tolist()[0]
@@ -294,7 +294,8 @@ if __name__ == '__main__':
     #joblib.dump(scaler, "./scaler.joblib")
     loaded_rf = joblib.load("./random_forest.joblib")
     scaler = joblib.load("./scaler.joblib")
-    print(get_arrival_time(loaded_rf, scaler, 'WDON', 'VAUXHLM', '8:00', 10))
+    x = datetime(2000, 10,10,8,10)
+    print(get_arrival_time(loaded_rf, scaler, 'WDON', 'VAUXHLM', x, 10))
     """
     weather()
     off_peak_times()
