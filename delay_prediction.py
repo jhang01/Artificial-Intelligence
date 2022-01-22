@@ -22,14 +22,14 @@ import joblib
 # Connect to the database
 # The database create table is in a text file called database, just copy and run it in pgadmin
 # Need to create a database in pgadmin first and change these parameters into your own details to allow succesful connection
-#conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
-conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
+conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
+#conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
 # Create a cursor
 cursor = conn.cursor()
 
 cursor.execute('SELECT * FROM trainperformance')
 
-data = cursor.fetchmany(32000) # Get all the row in traindata
+data = cursor.fetchmany(160000) # Get all the row in traindata
 
 cursor.execute('SELECT * FROM weather2017')
 
@@ -40,6 +40,8 @@ cursor.execute('SELECT * FROM singletrainperformance')
 singledata = cursor.fetchall()
 
 df = pd.DataFrame(data, columns=['rid', 'tpl', 'pta', 'ptd', 'wta', 'wtp', 'wtd', 'arr_et', 'arr_wet', 'arr_atRemoved',	'pass_et', 'pass_wet', 'pass_atRemoved', 'dep_et', 'dep_wet', 'dep_atRemoved', 'arr_at', 'pass_at', 'dep_at', 'cr_code', 'lr_code'])
+
+stations = pd.read_csv("stations.csv")
 
 weymouth_weather_df = pd.DataFrame(weatherdata, columns=['name', 'datetime', 'tempmax',	'tempmin',	'temp',	'feelslikemax',	'feelslikemin',	'feelslike', 'dew',	'humidity',	'precip', 'precipprob',	'precipcover',	'preciptype', 'snow', 'snowdepth', 'windgust', 'windspeed',	'winddir', 'sealevelpressure', 'cloudcover', 'visibility',	'solarradiation', 'solarenergy', 'uvindex', 'severerisk', 'sunrise', 'sunset', 'moonphase', 'conditions', 'description', 'icon', 'stations'])
 
@@ -75,6 +77,16 @@ def estimate_time_difference():
             arriving_time = single_performance_df.loc[i + 1]['ptd']
         print("----------------------------")
         print(arriving_station + " " + departing_station)
+        arriving_array = stations.loc[stations['abb'] == arriving_station]['tiploc'].values
+        departing_array = stations.loc[stations['abb'] == departing_station]['tiploc'].values
+        if len(arriving_array) > 0:
+            arriving_station = arriving_array[0]
+        else:
+            arriving_station = ''
+        if len(departing_array) > 0:
+            departing_station = departing_array[0]
+        else:
+            departing_station = ''
         print(departing_time.strip()[:5].zfill(5) + " " + arriving_time.strip()[:5].zfill(5))
         time_minutes = (datetime.strptime(arriving_time.strip().zfill(5), '%H:%M') - datetime.strptime(departing_time.strip().zfill(5), '%H:%M')).total_seconds()/60 
         print(time_minutes)
@@ -292,22 +304,23 @@ if __name__ == '__main__':
     #trained, scaler = train_model()
     #joblib.dump(trained, "./random_forest.joblib")
     #joblib.dump(scaler, "./scaler.joblib")
-    """
-    weather()
-    off_peak_times()
-    seasons()
-
-    print(df.loc[[18,31781]])
+    
+    #weather()
+    #off_peak_times()
+    #seasons()
+    #x = df.loc[[107446, 117601, 120426, 150580]]
+    #107446, 117601, 120426, 150580
+    #print(x.iloc[:,[21,22,23,24]])
     #print(df.iloc[21,22,23,24])
-    """
-    """
-    delay = timedelta(minutes=120)
+    
+    
+    delay = timedelta(minutes=10)
     
     loaded_rf = joblib.load("./random_forest.joblib")
     scaler = joblib.load("./scaler.joblib")
     x = datetime(2000, 10,10,8,10)
-    print(get_arrival_time(loaded_rf, scaler, 'WDON', 'VAUXHLM', x, delay))
-    """
+    print(get_arrival_time(loaded_rf, scaler, 'CLJ', 'WAT', x, delay))
+    
     """
     weather()
     off_peak_times()
