@@ -30,41 +30,48 @@ delay_input = {'predict', 'prediction', 'delay', 'delays'}
 
 
 def greeting(doc):
+    doc = nlp(doc)
     for token in doc:
         if token.text.lower() in greeting_input:
             return (greeting_output)
 
 
 def agree(doc):
+    doc = nlp(doc)
     for token in doc:
         if token.text.lower() in agree_input:
             return (agree_output)
 
 
 def disagree(doc):
+    doc = nlp(doc)
     for token in doc:
         if token.text.lower() in disagree_input:
             return (disagree_output)
 
 
 def thanks(doc):
+    doc = nlp(doc)
     for token in doc:
         if token.text.lower() in thanks_input:
             return (thanks_output)
 
 
 def lemmatizaion(doc):
+    doc = nlp(doc)
     for token in doc:
         print(token, token.lemma_)
 
 
 def pos(doc):
+    doc = nlp(doc)
     for token in doc:
         print(token, token.pos_)
 
 
 def getDate(user):
     # Reference from : https://stackoverflow.com/questions/67113389/spacy-matcher-date-pattern-will-match-hyphens-but-not-forward-slashes
+    user = nlp(user)
     ticketDate = None
 
     for ent in user.ents:
@@ -108,6 +115,7 @@ def getDate(user):
 
 
 def getTime(user):
+    user = nlp(user)
     ticket_time = None
     for ent in user.ents:
         if ent.label_ == "TIME":
@@ -140,28 +148,35 @@ def getTime(user):
 def getcity(user):
     departure = None
     arrival = None
-    # Not sure should the matcher be in the knowledge base or nlp
-    # To find the match 'from city' and 'to city' to know the departure and arrival station
 
-    matcher = Matcher(nlp.vocab)
-    fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
-    fromStation2 = [{'LOWER': 'from'}, {'POS': 'PROPN', 'OP': '*'}]
-    matcher.add('from', [fromStation])
-    matcher.add('from2', [fromStation2])
-    matches = matcher(user)
+    # matcher = Matcher(nlp.vocab)
+    # fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
+    # fromStation2 = [{'LOWER': 'from'}, {'POS': 'PROPN', 'OP': '*'}]
+    # matcher.add('from', [fromStation])
+    # matcher.add('from2', [fromStation2])
+    # matches = matcher(user)
+    #
+    # for match_id, start, end in matches:
+    #     departure = user[start:end].text
 
-    for match_id, start, end in matches:
-        departure = user[start:end].text
+    if " from " in (" " + user + " ") and " to " in (" " + user + " "):
+        dleft = 'from'
+        dright = 'to'
+        departure = (user[user.index(dleft) + len(dleft):user.index(dright)])
 
-    matcher2 = Matcher(nlp.vocab)
-    toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
-    toStation2 = [{'LOWER': 'to'}, {'POS': 'PROPN', 'OP': '*'}]
-    matcher2.add('to', [toStation])
-    matcher2.add('to2', [toStation2])
-    matches2 = matcher2(user)
 
-    for match_id, start, end in matches2:
-        arrival = user[start:end].text
+    # matcher2 = Matcher(nlp.vocab)
+    # toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
+    # toStation2 = [{'LOWER': 'to'}, {'POS': 'PROPN', 'OP': '*'}]
+    # matcher2.add('to', [toStation])
+    # matcher2.add('to2', [toStation2])
+    # matches2 = matcher2(user)
+    #
+    # for match_id, start, end in matches2:
+    #     arrival = user[start:end].text
+
+    if " to " in (" " + user + " "):
+        arrival = user.partition('to')[2]
 
     return departure, arrival
 
@@ -258,7 +273,7 @@ def get_entities(message):
 if __name__ == '__main__':
     while (True):
         user = input()
-        user = nlp(user)
+        #user = nlp(user)
 
         rule = nlp("buy train ticket")
 
