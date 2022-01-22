@@ -19,17 +19,17 @@ import urllib.error
 import ssl
 import joblib
 
-
 # Connect to the database
 # The database create table is in a text file called database, just copy and run it in pgadmin
 # Need to create a database in pgadmin first and change these parameters into your own details to allow succesful connection
-conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
+conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
+# conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
 # Create a cursor
 cursor = conn.cursor()
 
 cursor.execute('SELECT * FROM trainperformance')
 
-data = cursor.fetchmany(10000) # Get all the row in traindata
+data = cursor.fetchall() # Get all the row in traindata
 
 cursor.execute('SELECT * FROM weather2017')
 
@@ -202,8 +202,6 @@ def get_snow(date):
     else:
         return 0
 
-
-
 def mlpregressor(x_train, y_train, x_test, y_test):
     # mlp = MLPRegressor(hidden_layer_sizes=150, solver='lbfgs', max_iter=10000, activation='identity', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
     mlp = MLPRegressor(hidden_layer_sizes=150, solver='adam', max_iter=10000, activation='relu', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
@@ -277,32 +275,25 @@ def train_model():
     scaler = StandardScaler()
     scaler.fit(X)
 
-    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y, test_size=0.1, random_state=2)
+    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y, test_size=0.1, random_state=1)
 
     Xtrain = scaler.transform(Xtrain)
     Xtest = scaler.transform(Xtest)
     prediction_model = rand_forest(Xtrain, Ytrain, Xtest, Ytest)
-    """
-    startTime = time.time()
-    
-    executionTime = (time.time() - startTime)
-    print('Execution time in seconds: ' + str(executionTime))
-    """
     return prediction_model, scaler
     
 
 def get_arrival_time(prediction_model, scaler, begin_station, destination_station, left_time_string, delay_amount):
-    
-    
     a = estimate_time_difference()
     arrival_time = calculate_arrival_time(begin_station, destination_station, left_time_string, delay_amount, a, prediction_model, scaler)
     return arrival_time
-    
 
 if __name__ == '__main__':
     trained, scaler = train_model()
-    joblib.dump(trained, "./random_forest.joblib")
-    #joblib.dump(scaler, )
+    #joblib.dump(trained, "./random_forest.joblib")
+    #joblib.dump(scaler, "./scaler.joblib")
+    #loaded_rf = joblib.load("./random_forest.joblib")
+    #scaler = joblib.load("./scaler.joblib")
     print(get_arrival_time(trained, scaler, 'WDON', 'VAUXHLM', '8:00', 10))
     """
     weather()
