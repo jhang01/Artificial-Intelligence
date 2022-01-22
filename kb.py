@@ -161,6 +161,7 @@ class Booking(KnowledgeEngine):
     def ask_name(self):
         if 'name' in self.dictionary:
             name = self.dictionary.get('name')
+            name = name.replace(" ", "")
             if (name in nlp.booking_input) or (name in nlp.delay_input):  # need to add duplicate for database
                 set_response(
                     "The name you entered '" + name + "' cannot be assigned as an username. You're now assigned as a guest user.")
@@ -546,26 +547,6 @@ class Booking(KnowledgeEngine):
             else:
                 self.knowledge['question'] = 'ask_predict_depart_time'
             set_response("Predict depart time")
-            self.declare(Fact(isQuestion=True))
-
-    # Ask Predict Return Time # if return
-    @Rule(Fact(service='predict'),
-          NOT(Fact(isQuestion=W())),
-          NOT(Fact(predictReturnTime=W())),
-          salience=86)
-    def ask_predict_return_time(self):
-        if 'times' in self.dictionary:
-            predictReturnTime = self.dictionary.get('times')
-            predictReturnTime = predictReturnTime[1] if len(predictReturnTime) > 1 else predictReturnTime[0]
-            self.declare(Fact(predictReturnTime=predictReturnTime))
-            self.knowledge['predictReturnTime'] = predictReturnTime
-            del self.dictionary['times']
-        else:
-            if self.knowledge['question'] == 'ask_predict_return_time':
-                set_response("ask predict return time")
-            else:
-                self.knowledge['question'] = 'ask_predict_return_time'
-            set_response("Predict return time")
             self.declare(Fact(isQuestion=True))
 
     # Ask Delay

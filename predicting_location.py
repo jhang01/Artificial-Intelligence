@@ -11,6 +11,7 @@ stationsAbb = data['CRS Code']
 
 def predict_location(location):
     uppercase_location = location.upper()
+    uppercase_location = uppercase_location.replace(" ", "")
     close_matches = difflib.get_close_matches(uppercase_location, stations, 1, 0.85)
     if uppercase_location in stations:
         i = data.loc[data['Station'] == uppercase_location].index[0]
@@ -22,7 +23,6 @@ def predict_location(location):
         guessed_station = True
         i = data.loc[data['Station'] == close_matches[0]].index[0]
         stationAbb = stationsAbb[i]
-        print(close_matches[0])
         # add user confirm if station is correct
         # probably do not need guessed_station
         return close_matches[0], stationAbb, guessed_station
