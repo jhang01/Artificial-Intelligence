@@ -660,7 +660,7 @@ class Booking(KnowledgeEngine):
         if not delay_time:
             set_response("Failed to make prediction based on information provided")
         else:
-            set_response("Delay time:" + delay_time)
+            set_response("Your train will reach you destination at: " + delay_time.strftime("%H:%M"))
             self.knowledge['informationGiven'] = True
             self.declare(Fact(informationGiven=True))
             self.declare(Fact(whatsNext=True))

@@ -22,8 +22,8 @@ def get_bot_response():
     # Reference from: https://pynative.com/python-postgresql-insert-update-delete-table-data-to-perform-crud-operations/
     try:
         userText = request.args.get('msg')
-        #conn = psycopg2.connect(database='AIdatabase', user='postgres', password='account7248', host='127.0.0.1',port='5432')
-        conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
+        conn = psycopg2.connect(database='AIdatabase', user='postgres', password='account7248', host='127.0.0.1',port='5432')
+        #conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
         cursor = conn.cursor()
         query = """INSERT INTO userdata (username, user_input, response) VALUES (%s, %s, %s) """
         if kb.hasUsername is True:
