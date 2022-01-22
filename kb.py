@@ -161,6 +161,12 @@ class Booking(KnowledgeEngine):
         if 'ticketInfoGiven' in self.knowledge:
             print(self.knowledge.get('ticketInfoGiven'))
             yield Fact(ticketInfoGiven=self.knowledge.get('ticketInfoGiven'))
+        if 'guessed' in self.knowledge:
+            print(self.knowledge.get('guessed'))
+            yield Fact(guessed=self.knowledge.get('guessed'))
+        if 'confirmLocation' in self.knowledge:
+            print(self.knowledge.get('confirmLocation'))
+            yield Fact(confirmLocation=self.knowledge.get('confirmLocation'))
 
 
         if 'userData' in self.knowledge:
@@ -229,6 +235,15 @@ class Booking(KnowledgeEngine):
         if 'location' in self.dictionary and len(self.dictionary.get('location')) > 1:
             location = self.dictionary.get('location')
             station_abbreviation = self.dictionary.get('station_abbreviation')
+            guessed_to_station = self.dictionary.get('guessedTo')
+            guessed_from_station = self.dictionary.get('guessedFrom')
+            if guessed_to_station == 'true':
+                self.declare(Fact(guessed=True))
+                self.knowledge['guessed'] = True
+            if guessed_from_station == 'true':
+                self.declare(Fact(guessed=True))
+                self.knowledge['guessed'] = True
+
             self.declare(Fact(fromLocationAbb=station_abbreviation[0]))
             self.knowledge['fromLocationAbb'] = station_abbreviation[0]
             self.declare(Fact(toLocationAbb=station_abbreviation[1]))
@@ -249,12 +264,37 @@ class Booking(KnowledgeEngine):
             self.declare(Fact(isQuestion=True))
 
     #confirm location
+    @Rule(Fact(service='book'),
+          Fact(guessed=True),
+          NOT(Fact(isQuestion=W())),
+          NOT(Fact(confirmLocation=W())),
+          salience=96)
+    def confirm_locations(self):
+        if 'answer' in self.dictionary:
+            if self.dictionary.get('answer') == 'true':
+                self.declare(Fact(confirmLocation=True))
+            else:
+                i = len(self.facts)
+                numberofremoves = 0
+                for f in range(i): # retract last 5
+                    i -= 1
+                    numberofremoves += 1
+                    self.retract(i)
+                    if numberofremoves == 5:
+                        break
+        else:
+            if self.knowledge['question'] == 'ask_location':
+                set_response("Please confirm if the destinations are correct")
+            else:
+                self.knowledge['question'] = 'ask_location'
+            set_response("Did you mean: from " + self.knowledge['fromLocation'] + " to " + self.knowledge['toLocation'] + "?")
+            self.declare(Fact(isQuestion=True))
 
     # Ask Depart Date
     @Rule(Fact(service='book'),
           NOT(Fact(isQuestion=W())),
           NOT(Fact(departDate=W())),
-          salience=96)
+          salience=95)
     def ask_depart_date(self):
         departDate = 'false'
         error = False
@@ -285,7 +325,7 @@ class Booking(KnowledgeEngine):
           NOT(Fact(isQuestion=W())),
           NOT(Fact(departTime=W())),
           Fact(leaveDate=MATCH.leaveDate),
-          salience=95)
+          salience=94)
     def ask_depart_time(self, leaveDate):
         error = False
         departTime = 'false'
@@ -316,7 +356,7 @@ class Booking(KnowledgeEngine):
     @Rule(Fact(service='book'),
           NOT(Fact(isQuestion=W())),
           NOT(Fact(isReturn=W())),
-          salience=94)
+          salience=93)
     def ask_is_return(self):
         if 'return' in self.dictionary:
             self.declare(Fact(isReturn='true'))
@@ -339,7 +379,7 @@ class Booking(KnowledgeEngine):
           NOT(Fact(isQuestion=W())),
           Fact(isReturn='true'),
           NOT(Fact(returnDate=W())),
-          salience=93)
+          salience=92)
     def ask_return_date(self):
         returnDate = 'false'
         error = False
@@ -375,7 +415,7 @@ class Booking(KnowledgeEngine):
           NOT(Fact(isQuestion=W())),
           Fact(isReturn='true'),
           NOT(Fact(returnTime=W())),
-          salience=92)
+          salience=91)
     def ask_return_time(self):
         if 'times' in self.dictionary:
             returnTime = self.dictionary.get('times')
@@ -406,7 +446,7 @@ class Booking(KnowledgeEngine):
           Fact(leaveDate=MATCH.leaveDate),
           Fact(fromLocationAbb=MATCH.fromLocationAbb),
           Fact(toLocationAbb=MATCH.toLocationAbb),
-          salience=91)
+          salience=90)
     def show_single_ticket(self, fromLocation, toLocation, departDate, departTime, leaveDate, fromLocationAbb,
                            toLocationAbb):
         if 'givenTicket' not in self.knowledge:
@@ -453,7 +493,7 @@ class Booking(KnowledgeEngine):
           Fact(leaveDate=MATCH.leaveDate),
           Fact(fromLocationAbb=MATCH.fromLocationAbb),
           Fact(toLocationAbb=MATCH.toLocationAbb),
-          salience=90)
+          salience=89)
     def show_return_ticket(self, fromLocation, toLocation, departDate, departTime, returnDate, returnTime,
                            returnDateDT, leaveDate, fromLocationAbb, toLocationAbb):
         if 'givenTicket' not in self.knowledge:
@@ -509,7 +549,7 @@ class Booking(KnowledgeEngine):
     # Ask Confirm Booking
     @Rule(Fact(service='book'),
           Fact(givenTicket=True),
-          salience=89)
+          salience=88)
     def confirm_booking(self):
         if 'answer' in self.dictionary:
             if self.dictionary.get('answer') == 'true':
@@ -533,7 +573,7 @@ class Booking(KnowledgeEngine):
           NOT(Fact(isQuestion=W())),
           NOT(Fact(predictFromLocation=W())),
           NOT(Fact(predictToLocation=W())),
-          salience=88)
+          salience=87)
     def ask_predict_location(self):
         if 'location' in self.dictionary and len(self.dictionary.get('location')) > 1:
             location = self.dictionary.get('location')
@@ -564,7 +604,7 @@ class Booking(KnowledgeEngine):
     @Rule(Fact(service='predict'),
           NOT(Fact(isQuestion=W())),
           NOT(Fact(predictDepartTime=W())),
-          salience=87)
+          salience=86)
     def ask_predict_depart_time(self):
         if 'times' in self.dictionary:
             predictDepartTime = self.dictionary.get('times')
