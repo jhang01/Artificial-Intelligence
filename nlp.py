@@ -13,6 +13,7 @@ nlp = spacy.load('en_core_web_lg')
 greeting_input = ("hey", "hi", "good morning", "good evening", "morning", "evening", "hello")
 greeting_output = "Please could you provide us with a username, if you do not have one please reply with a " \
                   "desired username. "
+reset_input = ("reset", "start again", "restart", "clear")
 
 agree_input = ("yes", "yea", "yeah", "yh", "y", "true")
 agree_output = ("Okay, let me check it for you.")
@@ -28,6 +29,7 @@ services_input = ("booking", "ticket info", "delays")
 booking_input = {'travel', 'travels', 'book', 'booking', 'bookings'}
 delay_input = {'predict', 'prediction', 'delay', 'delays'}
 
+ticketInfo_input = {"ticket information", "ticket info", "information", "info"}
 
 def greeting(doc):
     for token in doc:

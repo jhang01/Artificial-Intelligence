@@ -22,6 +22,7 @@ def predict_location(location):
         guessed_station = True
         i = data.loc[data['Station'] == close_matches[0]].index[0]
         stationAbb = stationsAbb[i]
+        print(close_matches[0])
         # add user confirm if station is correct
         # probably do not need guessed_station
         return close_matches[0], stationAbb, guessed_station
@@ -69,7 +70,7 @@ def predict_location(location):
 
 """
 
-
+'''
 class PredictLocationTest(unittest.TestCase):
 
     def test_same_name(self):
@@ -83,12 +84,12 @@ class PredictLocationTest(unittest.TestCase):
 
     def test_not_found(self):
         self.assertEqual(predict_location('blaaa')[1], None)
-
+'''
 
 if __name__ == '__main__':
     # unittest.main()
     print('input: norwch')
-    print(predict_location('norwch'))
+    print(predict_location('nrowich'))
     print('-----------------')
     print('input: southampton')
     print(predict_location('southampton'))
