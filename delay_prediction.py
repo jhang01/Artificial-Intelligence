@@ -22,8 +22,8 @@ import joblib
 # Connect to the database
 # The database create table is in a text file called database, just copy and run it in pgadmin
 # Need to create a database in pgadmin first and change these parameters into your own details to allow succesful connection
-#conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
-conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
+conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
+#conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
 # Create a cursor
 cursor = conn.cursor()
 
@@ -289,12 +289,12 @@ def get_arrival_time(prediction_model, scaler, begin_station, destination_statio
     return arrival_time
 
 if __name__ == '__main__':
-    trained, scaler = train_model()
+    #trained, scaler = train_model()
     #joblib.dump(trained, "./random_forest.joblib")
     #joblib.dump(scaler, "./scaler.joblib")
-    #loaded_rf = joblib.load("./random_forest.joblib")
-    #scaler = joblib.load("./scaler.joblib")
-    print(get_arrival_time(trained, scaler, 'WDON', 'VAUXHLM', '8:00', 10))
+    loaded_rf = joblib.load("./random_forest.joblib")
+    scaler = joblib.load("./scaler.joblib")
+    print(get_arrival_time(loaded_rf, scaler, 'WDON', 'VAUXHLM', '8:00', 10))
     """
     weather()
     off_peak_times()
