@@ -162,8 +162,8 @@ def getcity(user):
     #     departure = user[start:end].text
 
     if " from " in (" " + str(user) + " ") and " to " in (" " + str(user) + " "):
-        dleft = 'from'
-        dright = 'to'
+        dleft = 'from '
+        dright = ' to '
         departure = (user[user.index(dleft) + len(dleft):user.index(dright)])
 
 
@@ -178,7 +178,7 @@ def getcity(user):
     #     arrival = user[start:end].text
 
     if " to " in (" " + str(user) + " "):
-        arrival = user.partition('to')[2]
+        arrival = user.partition(' to ')[2]
 
     return departure, arrival
 
