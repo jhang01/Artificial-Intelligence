@@ -161,7 +161,7 @@ def getcity(user):
     # for match_id, start, end in matches:
     #     departure = user[start:end].text
 
-    if " from " in (" " + str(user) + " ") and " to " in (" " + str(user) + " "):
+    if " from " in (" " + user + " ") and " to " in (" " + user + " "):
         dleft = 'from'
         dright = 'to'
         departure = (user[user.index(dleft) + len(dleft):user.index(dright)])
@@ -177,8 +177,10 @@ def getcity(user):
     # for match_id, start, end in matches2:
     #     arrival = user[start:end].text
 
-    if " to " in (" " + str(user) + " "):
+    if " to " in (" " + user + " "):
         arrival = user.partition('to')[2]
+
+    print(departure, arrival)
 
     return departure, arrival
 
@@ -210,10 +212,9 @@ def get_entities(message):
 
     locations = []
     locations_abbreviation = []
-    fromStation, toStation = getcity(message)
+    fromStation, toStation = getcity(str(message))
 
     if fromStation:
-        fromStation = str(fromStation[5:])
         station_name, station_abbreviation, guessed = predicting_location.predict_location(fromStation)
         if station_name:
             locations.append(station_name)
@@ -224,7 +225,6 @@ def get_entities(message):
                 kbdictionary['guessedFrom'] = 'false'
 
     if toStation:
-        toStation = str(toStation[3:])
         station_name, station_abbreviation, guessed = predicting_location.predict_location(toStation)
         if station_name:
             locations.append(station_name)
