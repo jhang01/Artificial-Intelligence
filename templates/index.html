@@ -69,9 +69,26 @@
                     </div>
                 </div>
                 `;
+                
+                document.getElementById("chatbox").innerHTML +=
+                    `
+                    <div class="msg left-msg" id="loading">
+                        <div class="msg-img">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="msg-bubble">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
+                    </div>
+                    `;
+                    document.getElementById("textInput").scrollIntoView();
+                
                 document.getElementById("textInput").value = "";
                 $.get("/get", { msg: text }, async function(data) {
                     let list = data.split("@/")
+                    document.getElementById("loading").remove();
                     list.forEach(async (item) => {
                         if (item.includes('sendHyperLink:')){
                             item = item.slice(14)
@@ -86,6 +103,7 @@
             }
 
             function chat_bot_link_response(data){
+
                 document.getElementById("chatbox").innerHTML +=
                     `
                     <div class="msg left-msg">
@@ -103,6 +121,7 @@
 
 
             function chat_bot_response(data){
+
                 document.getElementById("chatbox").innerHTML +=
                     `
                     <div class="msg left-msg">

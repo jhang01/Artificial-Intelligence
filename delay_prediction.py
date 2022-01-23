@@ -22,14 +22,14 @@ import joblib
 # Connect to the database
 # The database create table is in a text file called database, just copy and run it in pgadmin
 # Need to create a database in pgadmin first and change these parameters into your own details to allow succesful connection
-#conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
-conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
+conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
+#conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
 # Create a cursor
 cursor = conn.cursor()
 
 cursor.execute('SELECT * FROM trainperformance')
 
-data = cursor.fetchmany(160000) # Get all the row in traindata
+data = cursor.fetchmany(320000) # Get all the row in traindata
 
 cursor.execute('SELECT * FROM weather2017')
 
@@ -55,7 +55,6 @@ conn.close()
 
 single_performance_df = pd.read_csv('single_train_performance.csv')
 
-#time_difference = {'From':[], 'To':[], 'Minutes':[]}
 time_difference = {'From':[], 'Minutes':[]}
 
 def estimate_time_difference():
@@ -131,7 +130,7 @@ def calculate_arrival_time(begin_station, destination_station, left_time_date, d
     current_precip = weatherData['days'][0]['precip']
     current_condition = icon_to_number(weatherData['days'][0]['icon'])
     current_snowdepth = weatherData['days'][0]['snowdepth']
-    current_season = check_autumn(datetime.now().strftime('%m'))
+    current_season = check_season(datetime.now().strftime('%m'))
     predicted_delay = 0
 
     for i in range(from_index, to_index):
@@ -163,7 +162,7 @@ def get_time(row, day):
 def off_peak_times():
     df['offpeak'] = df.apply(lambda row: get_time(row, datetime.strptime(row['rid'][slice(0,8)], '%Y%m%d').weekday()), axis=1)
 
-def check_autumn(number):
+def check_season(number):
     if  number == '09' or number == '10' or number == '11':
         return 1 #Autumn
     elif number == '12' or number == '01' or number == '02':
@@ -174,7 +173,7 @@ def check_autumn(number):
         return 4
 
 def seasons():
-    df['is_autumn'] = df.apply(lambda row : check_autumn(row['rid'][slice(4,6)]), axis=1)
+    df['is_season'] = df.apply(lambda row : check_season(row['rid'][slice(4,6)]), axis=1)
 
 def is_weekend(day):
     if day > 4:
@@ -327,62 +326,22 @@ if __name__ == '__main__':
     
     #weather()
     #off_peak_times()
-    #seasons()
-    #x = df.loc[[107446, 117601, 120426, 150580]]
+    seasons()
+    x = df.loc[[4,42374,79414,186735,314590]]
     #107446, 117601, 120426, 150580
     #print(x)
-    #print(x.iloc[:,[0,21,22,23,24]])
+    print(x.iloc[:,[0,21]])
     #print(df.iloc[21,22,23,24])
     
-    
+    '''
     delay = timedelta(minutes=10)
     
     loaded_rf = joblib.load("./random_forest.joblib")
     scaler = joblib.load("./scaler.joblib")
     x = datetime(2000, 10,10,8,10)
     print(get_arrival_time(loaded_rf, scaler, 'DCH', 'WEY', x, delay))
+    '''
     
-    """
-    weather()
-    off_peak_times()
-    seasons()
-
-    df['arrival_diff'] = df.apply(lambda row : (datetime.strptime((row['arr_at']).strip(), '%H:%M') - datetime.strptime((row['pta']).strip(), '%H:%M')).total_seconds()/60  if row['arr_at'] != None and row['pta'] != None else None, axis=1)
-    print(df.info())
-
-    filtered_df = df[df['arr_at'].notnull() & df['pta'].notnull()]
-
-    print(filtered_df.iloc[:,27])
-
-
-    filtered_df["precipitation"] = filtered_df["precipitation"].astype(object).astype(float)
-
-    Y = filtered_df.iloc[:,27]
-
-    X = filtered_df.iloc[:,[21,22,23,24,25,26]]
-
-    print(filtered_df.info())
-    
-    print(X)
-    scaler = StandardScaler()
-    scaler.fit(X)
-
-    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y, test_size=0.1, random_state=2)
-
-    Xtrain = scaler.transform(Xtrain)
-    Xtest = scaler.transform(Xtest)
-    prediction_model = rand_forest(Xtrain, Ytrain, Xtest, Ytest)
-    """
-    """
-    startTime = time.time()
-    
-    executionTime = (time.time() - startTime)
-    print('Execution time in seconds: ' + str(executionTime))
-    """
-    """
-    a = estimate_time_difference()
-    calculate_arrival_time('WDON', 'VAUXHLM', '8:00', 10, a, prediction_model)
-    """
     
     
     
