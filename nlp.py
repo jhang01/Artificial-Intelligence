@@ -26,10 +26,10 @@ thanks_output = ("Happy to help!")
 
 services_input = ("booking", "ticket info", "delays")
 
-booking_input = {'travel', 'travels', 'book', 'booking', 'bookings'}
-delay_input = {'predict', 'prediction', 'delay', 'delays'}
-
+booking_input = {'travel', 'travels', 'book', 'booking', 'bookings', 'book tickets', 'book a ticket', 'book ticket'}
+delay_input = {'predict', 'prediction', 'delay', 'delays', 'train delay info', 'train delay information', 'train delay'}
 ticketInfo_input = {"ticket information", "ticket info", "information", "info"}
+present_time_input = {"now", "right now", "immediately", "straight away"}
 
 def greeting(doc):
     doc = nlp(doc)
@@ -131,20 +131,25 @@ def getTime(user):
     matcher.add('time2', [time2])
     matches = matcher(user)
 
-    for match_id, start, end in matches:
-        ticket_time = user[start:end].text
-        n = 2
-        if ':' in ticket_time:
-            ticket_time = ''.join(i.zfill(2) for i in ticket_time.split(':'))
-            ticket_time = ':'.join([ticket_time[i:i + n] for i in range(0, len(ticket_time), n)])
+    if matches:
+        for match_id, start, end in matches:
+            ticket_time = user[start:end].text
+            n = 2
+            if ':' in ticket_time:
+                ticket_time = ''.join(i.zfill(2) for i in ticket_time.split(':'))
+                ticket_time = ':'.join([ticket_time[i:i + n] for i in range(0, len(ticket_time), n)])
 
-        date_plus_tme = "01/01/01 " + ticket_time
-        try:
-            ticket_time = datetime.strptime(date_plus_tme, "%d/%m/%y %H:%M")
-        except:
-            ticket_time = None
+            date_plus_tme = "01/01/01 " + ticket_time
+            try:
+                ticket_time = datetime.strptime(date_plus_tme, "%d/%m/%y %H:%M")
+            except:
+                ticket_time = None
 
-    return ticket_time
+        return ticket_time
+
+    if user == present_time_input:
+        ticket_time = datetime.now()
+        return ticket_time
 
 
 def getcity(user):
@@ -255,17 +260,14 @@ def get_entities(message):
     for token in message:
         token = str(token).lower()
 
-        if token in {'predict', 'prediction', 'delay', 'delays', "train delay info"}:
+        if token in delay_input:
             kbdictionary['service'] = 'predict'
 
-        if token in {'travel', 'travels', 'book', 'booking', 'bookings'}:
+        if token in booking_input:
             kbdictionary['service'] = 'book'
 
-        if token in {'info', 'ticket info'}:
+        if token in  ticketInfo_input:
             kbdictionary['service'] = 'info'
-
-        if token in {'return', 'returns'}:
-            kbdictionary['return'] = 'true'
 
         if token in reset_input:
             kbdictionary['reset'] = 'true'

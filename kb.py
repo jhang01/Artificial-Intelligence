@@ -1,20 +1,11 @@
-import random
 
 import joblib
 import psycopg2
 from experta import *
-from experta.watchers import RULES, AGENDA
-import dateutil.parser
 from datetime import datetime
-from datetime import timedelta
-
 import delay_prediction
-
 from web_scrapper import Ticket
 import nlp
-from random import choice
-import app
-import predicting_location
 from datetime import timedelta
 
 global response
@@ -63,8 +54,7 @@ class Booking(KnowledgeEngine):
                 set_hasUsername()
                 for f in self.facts:
                     self.retract(f)
-        for i in self.facts:
-            print(i)
+
         # Get Service
         service = self.dictionary.get('service')  # get service stored
         name = self.knowledge.get('name')
@@ -277,6 +267,7 @@ class Booking(KnowledgeEngine):
     def confirm_locations(self):
         if 'answer' in self.dictionary:
             if self.dictionary.get('answer') == 'true':
+                self.knowledge['confirmLocation'] = True
                 self.declare(Fact(confirmLocation=True))
             else:
                 i = len(self.facts)
@@ -315,7 +306,6 @@ class Booking(KnowledgeEngine):
                 self.declare(Fact(departDate=toDate))
                 self.knowledge['departDate'] = toDate
                 del self.dictionary['dates']
-
         if self.knowledge['question'] == 'ask_depart_date' and departDate == 'false' and not error:
             set_response("Please provide a valid date")
         else:
@@ -765,5 +755,4 @@ def process_entities(entities):
 
 
 if __name__ == '__main__':
-    # print(predicting_location.predict_location("Norwich"))
     print()
