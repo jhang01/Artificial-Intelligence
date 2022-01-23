@@ -45,6 +45,7 @@ stations = pd.read_csv("stations.csv")
 
 weymouth_weather_df = pd.DataFrame(weatherdata, columns=['name', 'datetime', 'tempmax',	'tempmin',	'temp',	'feelslikemax',	'feelslikemin',	'feelslike', 'dew',	'humidity',	'precip', 'precipprob',	'precipcover',	'preciptype', 'snow', 'snowdepth', 'windgust', 'windspeed',	'winddir', 'sealevelpressure', 'cloudcover', 'visibility',	'solarradiation', 'solarenergy', 'uvindex', 'severerisk', 'sunrise', 'sunset', 'moonphase', 'conditions', 'description', 'icon', 'stations'])
 
+#weymouth_weather_df['snowdepth'] = weymouth_weather_df['snowdepth'].astype('int64', errors='ignore')
 
 # Close connection
 df['rid'] = df['rid'].astype('str')
@@ -54,7 +55,8 @@ conn.close()
 
 single_performance_df = pd.read_csv('single_train_performance.csv')
 
-time_difference = {'From':[], 'To':[], 'Minutes':[]}
+#time_difference = {'From':[], 'To':[], 'Minutes':[]}
+time_difference = {'From':[], 'Minutes':[]}
 
 def estimate_time_difference():
     for i in range(0, 61):
@@ -90,21 +92,35 @@ def estimate_time_difference():
         print(departing_time.strip()[:5].zfill(5) + " " + arriving_time.strip()[:5].zfill(5))
         time_minutes = (datetime.strptime(arriving_time.strip().zfill(5), '%H:%M') - datetime.strptime(departing_time.strip().zfill(5), '%H:%M')).total_seconds()/60 
         print(time_minutes)
+        """
         time_difference['From'].append(departing_station)
         time_difference['To'].append(arriving_station)
+        """
+        time_difference['From'].append(departing_station)
         time_difference['Minutes'].append(time_minutes)
-        
+    time_difference['From'].append('WAT')
+    time_difference['Minutes'].append(0)
     time_difference_df = pd.DataFrame(time_difference)
+    print(time_difference_df)
     return time_difference_df
 
 def calculate_arrival_time(begin_station, destination_station, left_time_date, delay_amount, time_difference_df, prediction_model, scaler):
     #left_time_date = datetime.strptime(left_time_string, '%H:%M')
-
+    
     from_index = time_difference_df.index[time_difference_df['From'] == begin_station].tolist()[0]
-    to_index = time_difference_df.index[time_difference_df['To'] == destination_station].tolist()[0]
+    #to_index = time_difference_df.index[time_difference_df['To'] == destination_station].tolist()[0]
+    to_index = time_difference_df.index[time_difference_df['From'] == destination_station].tolist()[0]
     print(time_difference_df)
-    mins = int(sum(time_difference_df['Minutes'].iloc[from_index:to_index + 1]))
-
+    print(from_index)
+    print(to_index)
+    if to_index > from_index:
+        mins = int(sum(time_difference_df['Minutes'].iloc[from_index:to_index]))
+    else:
+        mins = int(sum(time_difference_df['Minutes'].iloc[to_index:from_index]))
+        temp_index = from_index
+        from_index = to_index
+        to_index = temp_index
+    print(mins)
     estimate_time = left_time_date + timedelta(minutes=mins) + delay_amount
 
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -118,8 +134,11 @@ def calculate_arrival_time(begin_station, destination_station, left_time_date, d
     current_season = check_autumn(datetime.now().strftime('%m'))
     predicted_delay = 0
 
-    for i in range(from_index, to_index + 1):
+    for i in range(from_index, to_index):
+        print('---')
+        print(time_difference_df.loc[i]['Minutes'])
         left_time_date = left_time_date + timedelta(minutes=time_difference_df.loc[i]['Minutes'])
+        print(left_time_date)
         current_offtime = is_off_time(str(left_time_date.time()), date.today().weekday())
         scaled = scaler.transform([[current_temp, current_precip, current_condition, current_snowdepth, current_offtime, current_season]])
         predicted_delay = prediction_model.predict(scaled)
@@ -208,11 +227,12 @@ def get_icon(date):
 
 def get_snow(date):
     date_snow_df = weymouth_weather_df[weymouth_weather_df['datetime'] == date]
+    #print(date_snow_df.dtypes)
     snowdepth = date_snow_df.values[0][15] 
-    if isinstance(snowdepth, int):
-        return snowdepth
-    else:
+    if snowdepth == None:
         return 0
+    else:
+        return int(snowdepth)
 
 def mlpregressor(x_train, y_train, x_test, y_test):
     # mlp = MLPRegressor(hidden_layer_sizes=150, solver='lbfgs', max_iter=10000, activation='identity', random_state=0, learning_rate_init=0.001, verbose='True', momentum=0.9, tol=0.0001, early_stopping=False)
@@ -310,7 +330,8 @@ if __name__ == '__main__':
     #seasons()
     #x = df.loc[[107446, 117601, 120426, 150580]]
     #107446, 117601, 120426, 150580
-    #print(x.iloc[:,[21,22,23,24]])
+    #print(x)
+    #print(x.iloc[:,[0,21,22,23,24]])
     #print(df.iloc[21,22,23,24])
     
     
@@ -319,7 +340,7 @@ if __name__ == '__main__':
     loaded_rf = joblib.load("./random_forest.joblib")
     scaler = joblib.load("./scaler.joblib")
     x = datetime(2000, 10,10,8,10)
-    print(get_arrival_time(loaded_rf, scaler, 'CLJ', 'WAT', x, delay))
+    print(get_arrival_time(loaded_rf, scaler, 'DCH', 'WEY', x, delay))
     
     """
     weather()
