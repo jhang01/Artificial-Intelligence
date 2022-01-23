@@ -257,20 +257,20 @@ def get_entities(message):
         kbdictionary['times'] = times
 
     # Service/Is Return
-    for token in message:
-        token = str(token).lower()
 
-        if token in delay_input:
-            kbdictionary['service'] = 'predict'
 
-        if token in booking_input:
-            kbdictionary['service'] = 'book'
 
-        if token in  ticketInfo_input:
-            kbdictionary['service'] = 'info'
+    if str(message) in delay_input:
+        kbdictionary['service'] = 'predict'
 
-        if token in reset_input:
-            kbdictionary['reset'] = 'true'
+    if str(message) in booking_input:
+        kbdictionary['service'] = 'book'
+
+    if str(message) in ticketInfo_input:
+        kbdictionary['service'] = 'info'
+
+    if str(message) in reset_input:
+        kbdictionary['reset'] = 'true'
 
     print(kbdictionary)
 

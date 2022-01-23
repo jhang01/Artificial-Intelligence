@@ -155,12 +155,21 @@ class Booking(KnowledgeEngine):
         if 'ticketInfoGiven' in self.knowledge:
             print(self.knowledge.get('ticketInfoGiven'))
             yield Fact(ticketInfoGiven=self.knowledge.get('ticketInfoGiven'))
+
         if 'guessed' in self.knowledge:
             print(self.knowledge.get('guessed'))
             yield Fact(guessed=self.knowledge.get('guessed'))
         if 'confirmLocation' in self.knowledge:
             print(self.knowledge.get('confirmLocation'))
             yield Fact(confirmLocation=self.knowledge.get('confirmLocation'))
+
+        if 'predictConfirmLocation' in self.knowledge:
+            print(self.knowledge.get('predictConfirmLocation'))
+            yield Fact(predictConfirmLocation=self.knowledge.get('predictConfirmLocation'))
+
+        if 'predictGuessed' in self.knowledge:
+            print(self.knowledge.get('predictGuessed'))
+            yield Fact(predictGuessed=self.knowledge.get('predictGuessed'))
 
 
         if 'userData' in self.knowledge:
@@ -232,12 +241,6 @@ class Booking(KnowledgeEngine):
             station_abbreviation = self.dictionary.get('station_abbreviation')
             guessed_to_station = self.dictionary.get('guessedTo')
             guessed_from_station = self.dictionary.get('guessedFrom')
-            if guessed_to_station == 'true':
-                self.declare(Fact(guessed=True))
-                self.knowledge['guessed'] = True
-            if guessed_from_station == 'true':
-                self.declare(Fact(guessed=True))
-                self.knowledge['guessed'] = True
 
             self.declare(Fact(fromLocationAbb=station_abbreviation[0]))
             self.knowledge['fromLocationAbb'] = station_abbreviation[0]
@@ -248,6 +251,15 @@ class Booking(KnowledgeEngine):
             self.declare(Fact(toLocation=location[1]))
             self.knowledge['toLocation'] = location[1]
             del self.dictionary['location']
+            del self.dictionary['station_abbreviation']
+            del self.dictionary['guessedTo']
+            del self.dictionary['guessedFrom']
+            if guessed_to_station == 'true':
+                self.declare(Fact(guessed=True))
+                self.knowledge['guessed'] = True
+            if guessed_from_station == 'true':
+                self.declare(Fact(guessed=True))
+                self.knowledge['guessed'] = True
         else:
             if self.knowledge['question'] == 'ask_location':
                 set_response("Please specify where you would like to travel from and to, for example 'from london "
@@ -278,6 +290,11 @@ class Booking(KnowledgeEngine):
                     self.retract(i)
                     if numberofremoves == 5:
                         break
+                del self.knowledge['guessed']
+                del self.knowledge['fromLocationAbb']
+                del self.knowledge['toLocationAbb']
+                del self.knowledge['fromLocation']
+                del self.knowledge['toLocation']
         else:
             if self.knowledge['question'] == 'ask_location':
                 set_response("Please confirm if the destinations are correct")
@@ -570,9 +587,13 @@ class Booking(KnowledgeEngine):
           NOT(Fact(predictToLocation=W())),
           salience=87)
     def ask_predict_location(self):
+
         if 'location' in self.dictionary and len(self.dictionary.get('location')) > 1:
+
             location = self.dictionary.get('location')
             station_abbreviation = self.dictionary.get('station_abbreviation')
+            guessed_to_station = self.dictionary.get('guessedTo')
+            guessed_from_station = self.dictionary.get('guessedFrom')
 
             self.declare(Fact(predictFromLocation=location[0]))
             self.knowledge['predictFromLocation'] = location[0]
@@ -586,20 +607,72 @@ class Booking(KnowledgeEngine):
 
             del self.dictionary['location']
             del self.dictionary['station_abbreviation']
+            del self.dictionary['guessedTo']
+            del self.dictionary['guessedFrom']
+
+
+            if guessed_to_station == 'true':
+                self.declare(Fact(predictGuessed=True))
+                self.knowledge['predictGuessed'] = True
+            if guessed_from_station == 'true':
+                self.declare(Fact(predictGuessed=True))
+                self.knowledge['predictGuessed'] = True
+
         else:
             if self.knowledge['question'] == 'ask_predict_location':
-                set_response(
-                    "Please specify where you would like to travel from and to, for example 'from london liverpool street to cambridge'")
+                set_response("Try and be more specific with your destinations. For example 'from southampton central to london liverpool street'")
             else:
                 self.knowledge['question'] = 'ask_predict_location'
             set_response("Where is the train going from and to.")
             self.declare(Fact(isQuestion=True))
 
+
+    # confirm predict location
+
+    @Rule(Fact(service='predict'),
+          Fact(predictGuessed=True),
+          NOT(Fact(isQuestion=W())),
+          NOT(Fact(predictConfirmLocation=W())),
+          salience=86)
+    def confirm_predict_locations(self):
+        if 'answer' in self.dictionary:
+            if self.dictionary.get('answer') == 'true':
+                self.knowledge['predictConfirmLocation'] = True
+                self.declare(Fact(predictConfirmLocation=True))
+            else:
+
+                i = len(self.facts)
+                numberofremoves = 0
+                for f in range(i):  # retract last 5
+                    i -= 1
+                    numberofremoves += 1
+                    self.retract(i)
+                    if numberofremoves == 5:
+                        break
+
+                del self.knowledge['predictGuessed']
+                del self.knowledge['predictFromLocation']
+                del self.knowledge['predictToLocation']
+                del self.knowledge['predictFromLocationAbb']
+                del self.knowledge['predictToLocationAbb']
+
+
+        else:
+            if self.knowledge['question'] == 'ask_predict_location':
+                set_response("Please confirm if the destinations are correct")
+            else:
+                self.knowledge['question'] = 'ask_predict_location'
+            set_response(
+                "Did you mean: from " + self.knowledge['predictFromLocation'] + " to " + self.knowledge['predictToLocation'] + "?")
+
+            self.declare(Fact(isQuestion=True))
+
+
     # Ask Predict Depart Time
     @Rule(Fact(service='predict'),
           NOT(Fact(isQuestion=W())),
           NOT(Fact(predictDepartTime=W())),
-          salience=86)
+          salience=85)
     def ask_predict_depart_time(self):
         if 'times' in self.dictionary:
             predictDepartTime = self.dictionary.get('times')
@@ -619,15 +692,12 @@ class Booking(KnowledgeEngine):
           Fact(predictDepartTime=MATCH.predictDepartTime),
           NOT(Fact(isQuestion=W())),
           NOT(Fact(predictDelay=W())),
-          salience=85)
+          salience=84)
     def ask_predict_delay(self, predictDepartTime):
         if 'times' in self.dictionary:
             time = self.dictionary.get('times')[0]
             time = datetime.now() - time
-            print(time + timedelta(days=1))
-            print(type(time))
             time = abs(time - timedelta())
-            print(time)
 
             #print(minutes)
             self.declare(Fact(predictDelay=time))
@@ -647,9 +717,9 @@ class Booking(KnowledgeEngine):
           Fact(predictToLocationAbb=MATCH.predictToLocationAbb),
           Fact(predictDepartTime=MATCH.predictDepartTime),
           Fact(predictDelay=MATCH.predictDelay),
-          salience=84)
+          salience=83)
     def predict_delay(self, predictFromLocationAbb, predictToLocationAbb, predictDepartTime, predictDelay):
-        print(predictFromLocationAbb, predictToLocationAbb, predictDepartTime, predictDelay)
+        #print(predictFromLocationAbb, predictToLocationAbb, predictDepartTime, predictDelay)
         delay_time = delay_prediction.get_arrival_time(loaded_rf, scale, predictFromLocationAbb, predictToLocationAbb,
                                                        predictDepartTime, predictDelay)
         if not delay_time:
@@ -666,7 +736,7 @@ class Booking(KnowledgeEngine):
           NOT(Fact(ticketInfoGiven=W())),
           NOT(Fact(name='guest')),
           Fact(name=W()),
-          salience=83)
+          salience=82)
     def find_user_info(self):
         userdata = []
         try:
@@ -686,7 +756,7 @@ class Booking(KnowledgeEngine):
             userdata = cleaned_data2
             self.knowledge['userData'] = cleaned_data2
             self.declare(Fact(userData = cleaned_data2))
-            print(cleaned_data2)
+            #print(cleaned_data2)
         except (Exception, psycopg2.Error) as error:
             print("Failed executing query", error)
         finally:
