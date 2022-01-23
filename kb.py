@@ -766,19 +766,40 @@ class Booking(KnowledgeEngine):
                 print("Database connection close")
 
         last_ticket = ""
-        listofticketLinks = []
+        last_ticket_link = ""
         if not userdata:
             set_response("Sorry we can not find information based on the username" + self.knowledge['name'])
         else:
-            index = 0
             for i in reversed(userdata):
-                index -= 1
-                if "sendHyperLink" in i:
-                    listofticketLinks.append(i)
+                if "Please click on the following link to book your ticket" in i:
+                    last_ticket_link = i
+                    break
+                userdata.remove(i)
+
+
+            for i in reversed(userdata):
                 if "The cheapest ticket we found is:" in i:
-                    i = i.replace("Do you want to book this train ticket?", "")
-                    last_ticket = i
+                    if "Do you want to book this train ticket?" in i:
+                        i = i.replace("Do you want to book this train ticket?", "")
+                        last_ticket = i
+                        #print(i)
+                        break
+
+            set_response("The last ticket you booked is:")
             set_response(last_ticket)
+            set_response("Disclaimer* ticket information might not be up to date..")
+            set_response("Please follow the link for the latest information. Ticket link may be expired.")
+
+            last_ticket_link = last_ticket_link.split()
+
+            for i in last_ticket_link:
+                if "sendHyperLink:" in i:
+                    last_ticket_link = i
+
+            set_response(last_ticket_link)
+
+
+
             self.knowledge['ticketInfoGiven'] = True
             self.declare(Fact(ticketInfoGiven=True))
             self.declare(Fact(whatsNext=True))

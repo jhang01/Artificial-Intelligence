@@ -119,6 +119,12 @@ def getDate(user):
 def getTime(user):
     user = nlp(user)
     ticket_time = None
+
+    if str(user) in present_time_input:
+        print("Yes")
+        ticket_time = datetime.now()
+        return ticket_time
+
     for ent in user.ents:
         if ent.label_ == "TIME":
             ticket_time = dateparser.parse(ent.text, settings={'PREFER_DATES_FROM': 'future'})
@@ -147,9 +153,7 @@ def getTime(user):
 
         return ticket_time
 
-    if user == present_time_input:
-        ticket_time = datetime.now()
-        return ticket_time
+
 
 
 def getcity(user):
