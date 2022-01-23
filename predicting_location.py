@@ -26,6 +26,8 @@ def predict_location(location):
         # add user confirm if station is correct
         # probably do not need guessed_station
         return close_matches[0], stationAbb, guessed_station
+    elif uppercase_location == 'SOUTHAMPTON':
+        return 'SOUTHAMPTON CENTRAL', 'SOU', False
     else:
         for station in stations:
             stationAbb = data[data['Station'] == station].values[0][2]
