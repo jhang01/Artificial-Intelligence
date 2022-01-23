@@ -277,6 +277,7 @@ class Booking(KnowledgeEngine):
     def confirm_locations(self):
         if 'answer' in self.dictionary:
             if self.dictionary.get('answer') == 'true':
+                self.knowledge['confirmLocation'] = True
                 self.declare(Fact(confirmLocation=True))
             else:
                 i = len(self.facts)
@@ -315,7 +316,6 @@ class Booking(KnowledgeEngine):
                 self.declare(Fact(departDate=toDate))
                 self.knowledge['departDate'] = toDate
                 del self.dictionary['dates']
-
         if self.knowledge['question'] == 'ask_depart_date' and departDate == 'false' and not error:
             set_response("Please provide a valid date")
         else:
