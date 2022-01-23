@@ -260,16 +260,16 @@ def get_entities(message):
 
 
 
-    if message in delay_input:
+    if str(message) in delay_input:
         kbdictionary['service'] = 'predict'
 
-    if message in booking_input:
+    if str(message) in booking_input:
         kbdictionary['service'] = 'book'
 
-    if message in  ticketInfo_input:
+    if str(message) in ticketInfo_input:
         kbdictionary['service'] = 'info'
 
-    if message in reset_input:
+    if str(message) in reset_input:
         kbdictionary['reset'] = 'true'
 
     print(kbdictionary)
