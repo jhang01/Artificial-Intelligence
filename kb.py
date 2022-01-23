@@ -75,6 +75,10 @@ class Booking(KnowledgeEngine):
                 self.knowledge['service'] = service
                 if name:
                     self.knowledge['name'] = name
+                if name == 'guest':
+                    if service == 'info':
+                        set_response("Guest has no stored information")
+                        self.knowledge['service'] = 'chat'
                 # create new knowledge with name and service
         else:
             self.knowledge['service'] = service  # if no service then set as service #default chat
@@ -223,6 +227,7 @@ class Booking(KnowledgeEngine):
             self.knowledge['question'] = 'ask_if_booking'
         set_response("Which service would you like? Available services: booking, ticket information, train delay "
                      "information")
+        self.declare(Fact(isQuestion=True))
 
     # Ask Location
     @Rule(Fact(service='book'),
@@ -717,9 +722,11 @@ class Booking(KnowledgeEngine):
             self.knowledge['ticketInfoGiven'] = True
             self.declare(Fact(ticketInfoGiven=True))
             self.declare(Fact(whatsNext=True))
+            self.knowledge['whatsNext'] = True
 
     # Ask What's Next
     @Rule(Fact(whatsNext=True),
+          NOT(Fact(isQuestion=W())),
           salience=1)
     def whats_next(self):
         if 'answer' in self.dictionary:
@@ -738,6 +745,7 @@ class Booking(KnowledgeEngine):
             else:
                 self.knowledge['question'] = 'whats_next'
             set_response("Is there anything else I can help you with?")
+            self.declare(Fact(isQuestion=True))
 
 # Initialize new booking
 engine = Booking()

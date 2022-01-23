@@ -255,7 +255,7 @@ def get_entities(message):
     for token in message:
         token = str(token).lower()
 
-        if token in {'predict', 'prediction', 'delay', 'delays'}:
+        if token in {'predict', 'prediction', 'delay', 'delays', "train delay info"}:
             kbdictionary['service'] = 'predict'
 
         if token in {'travel', 'travels', 'book', 'booking', 'bookings'}:
