@@ -78,7 +78,7 @@ def getDate(user):
 
     for ent in user.ents:
         if ent.label_ == "DATE":
-            ticketDate = dateparser.parse(ent.text, settings={'DATE_ORDER': 'DMY'},
+            ticketDate = dateparser.parse(ent.text, settings={'DATE_ORDER': 'DMY', 'PREFER_DATES_FROM': 'future'},
                                           languages=['en'])  # uk chatbot so use DMY
             # ticketDate = str(ticketDate.day).zfill(2) + str(ticketDate.month).zfill(2) + (str(ticketDate.year)[2:])
             return ticketDate
