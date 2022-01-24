@@ -12,7 +12,7 @@ CREATE TABLE trainstation(
 
 CREATE TABLE trainstation(
     name VARCHAR(50) NOT NULL,
-    long.name_alias VARCHAR(50) NOT NULL,
+    longname_alias VARCHAR(50) NOT NULL,
     alpha3 VARCHAR(50) NOT NULL,
     tiploc VARCHAR(50) NOT NULL,
     abb VARCHAR(50) NOT NULL
