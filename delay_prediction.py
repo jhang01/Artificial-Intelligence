@@ -145,15 +145,20 @@ def calculate_arrival_time(begin_station, destination_station, left_time_date, d
 
     for i in range(from_index, to_index):
         print('---')
-        print(time_difference_df.loc[i]['Minutes'])
         left_time_date = left_time_date + timedelta(minutes=time_difference_df.loc[i]['Minutes'])
-        print(left_time_date)
         current_offtime = is_off_time(str(left_time_date.time()), date.today().weekday())
         scaled = scaler.transform([[current_temp, current_precip, current_condition, current_snowdepth, current_offtime, current_season]])
         predicted_delay = prediction_model.predict(scaled)
+        print(predicted_delay)
     
-    estimate_time = estimate_time + timedelta(minutes=int(predicted_delay[0])) 
-    return estimate_time
+    estimate_time = estimate_time + timedelta(minutes=int(predicted_delay[0]))
+
+    if estimate_time.second > 30:
+        estimate_time = estimate_time + timedelta(minutes=1)
+
+    total_delay = predicted_delay[0] + delay_amount
+
+    return estimate_time, total_delay
 
 def is_off_time(time, day):
     time = time.strip().zfill(5)
