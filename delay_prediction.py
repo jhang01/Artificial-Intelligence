@@ -22,8 +22,8 @@ import joblib
 # Connect to the database
 # The database create table is in a text file called database, just copy and run it in pgadmin
 # Need to create a database in pgadmin first and change these parameters into your own details to allow succesful connection
-#conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
-conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
+conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
+#conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
 # Create a cursor
 cursor = conn.cursor()
 
@@ -156,7 +156,7 @@ def calculate_arrival_time(begin_station, destination_station, left_time_date, d
     if estimate_time.second > 30:
         estimate_time = estimate_time + timedelta(minutes=1)
 
-    total_delay = predicted_delay[0] + delay_amount
+    total_delay = int(predicted_delay[0] + (delay_amount.seconds/60))
 
     return estimate_time, total_delay
 
