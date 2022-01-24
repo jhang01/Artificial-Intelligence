@@ -153,48 +153,19 @@ def getTime(user):
 
         return ticket_time
 
-
-
-
 def getcity(user):
     departure = None
     arrival = None
-
-    # matcher = Matcher(nlp.vocab)
-    # fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
-    # fromStation2 = [{'LOWER': 'from'}, {'POS': 'PROPN', 'OP': '*'}]
-    # matcher.add('from', [fromStation])
-    # matcher.add('from2', [fromStation2])
-    # matches = matcher(user)
-    #
-    # for match_id, start, end in matches:
-    #     departure = user[start:end].text
 
     if " from " in (" " + user + " ") and " to " in (" " + user + " "):
         dleft = 'from '
         dright = ' to '
         departure = (user[user.index(dleft) + len(dleft):user.index(dright)])
 
-    # matcher2 = Matcher(nlp.vocab)
-    # toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
-    # toStation2 = [{'LOWER': 'to'}, {'POS': 'PROPN', 'OP': '*'}]
-    # matcher2.add('to', [toStation])
-    # matcher2.add('to2', [toStation2])
-    # matches2 = matcher2(user)
-    #
-    # for match_id, start, end in matches2:
-    #     arrival = user[start:end].text
-
     if " to " in (" " + user + " "):
         arrival = user.partition(' to ')[2]
 
     return departure, arrival
-
-
-def getSimilarity(rule, user):
-    similarity = rule.similarity(user)
-    return similarity
-
 
 def get_entities(message):
     message = message.lower()
@@ -284,12 +255,6 @@ def get_entities(message):
 if __name__ == '__main__':
     while (True):
         user = input()
-        #user = nlp(user)
-
-        rule = nlp("buy train ticket")
-
-        # similarity = getSimilarity(rule, user)
-        # print(similarity)
 
         lemmatizaion(user)
         pos(user)
