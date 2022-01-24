@@ -697,7 +697,8 @@ class Booking(KnowledgeEngine):
         if 'times' in self.dictionary:
             time = self.dictionary.get('times')[0]
             time = datetime.now() - time
-            time = abs(time - timedelta())
+            time = abs(time)
+            print(time)
 
             #print(minutes)
             self.declare(Fact(predictDelay=time))
