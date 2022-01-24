@@ -2,7 +2,7 @@ import dateparser
 import dateutil
 from dateutil import parser
 import spacy
-from spacy.matcher import Matcher
+from spacy.matcher import Matcher 
 
 import kb
 import predicting_location
@@ -26,8 +26,8 @@ thanks_output = ("Happy to help!")
 
 services_input = ("booking", "ticket info", "delays")
 
-booking_input = {'travel', 'travels', 'book', 'booking', 'bookings', 'book tickets', 'book a ticket', 'book ticket', 'want to book a train ticket', 'want to book train', 'want to book a train'}
-delay_input = {'predict', 'prediction', 'delay', 'delays', 'train delay info', 'train delay information', 'train delay', 'get delay info'}
+booking_input = {'travel', 'travels', 'book', 'booking', 'bookings', 'book tickets', 'book a ticket', 'book ticket', 'want to book a train ticket', 'want to book train', 'want to book a train', 'booking train ticket'}
+delay_input = {'predict', 'prediction', 'delay', 'delays', 'train delay info', 'train delay information', 'train delay', 'get train delay info', 'get delay info'}
 ticketInfo_input = {"ticket information", "ticket info", "information", "info", 'get ticket info'}
 present_time_input = {"now", "right now", "immediately", "straight away"}
 
@@ -153,48 +153,19 @@ def getTime(user):
 
         return ticket_time
 
-
-
-
 def getcity(user):
     departure = None
     arrival = None
-
-    # matcher = Matcher(nlp.vocab)
-    # fromStation = [{'LOWER': 'from'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
-    # fromStation2 = [{'LOWER': 'from'}, {'POS': 'PROPN', 'OP': '*'}]
-    # matcher.add('from', [fromStation])
-    # matcher.add('from2', [fromStation2])
-    # matches = matcher(user)
-    #
-    # for match_id, start, end in matches:
-    #     departure = user[start:end].text
 
     if " from " in (" " + user + " ") and " to " in (" " + user + " "):
         dleft = 'from '
         dright = ' to '
         departure = (user[user.index(dleft) + len(dleft):user.index(dright)])
 
-    # matcher2 = Matcher(nlp.vocab)
-    # toStation = [{'LOWER': 'to'}, {'ENT_TYPE': 'GPE', 'OP': '*'}]
-    # toStation2 = [{'LOWER': 'to'}, {'POS': 'PROPN', 'OP': '*'}]
-    # matcher2.add('to', [toStation])
-    # matcher2.add('to2', [toStation2])
-    # matches2 = matcher2(user)
-    #
-    # for match_id, start, end in matches2:
-    #     arrival = user[start:end].text
-
     if " to " in (" " + user + " "):
         arrival = user.partition(' to ')[2]
 
     return departure, arrival
-
-
-def getSimilarity(rule, user):
-    similarity = rule.similarity(user)
-    return similarity
-
 
 def get_entities(message):
     message = message.lower()
@@ -284,12 +255,6 @@ def get_entities(message):
 if __name__ == '__main__':
     while (True):
         user = input()
-        #user = nlp(user)
-
-        rule = nlp("buy train ticket")
-
-        # similarity = getSimilarity(rule, user)
-        # print(similarity)
 
         lemmatizaion(user)
         pos(user)
