@@ -2,8 +2,20 @@ from os import stat
 from pandas import *
 import difflib
 import unittest
+import psycopg2
 
-data = read_csv("stationabb.csv")
+conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
+#conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
+
+cursor = conn.cursor()
+
+cursor.execute('SELECT * FROM trainstation')
+
+trainabbdata = cursor.fetchall()
+
+data = DataFrame(trainabbdata, columns=['Station', 'Name', 'CRS Code'])
+
+#data = read_csv("stationabb.csv")
 
 stations = data['Station'].tolist()
 stationsAbb = data['CRS Code']

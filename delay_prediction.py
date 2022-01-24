@@ -41,11 +41,15 @@ singledata = cursor.fetchall()
 
 df = pd.DataFrame(data, columns=['rid', 'tpl', 'pta', 'ptd', 'wta', 'wtp', 'wtd', 'arr_et', 'arr_wet', 'arr_atRemoved',	'pass_et', 'pass_wet', 'pass_atRemoved', 'dep_et', 'dep_wet', 'dep_atRemoved', 'arr_at', 'pass_at', 'dep_at', 'cr_code', 'lr_code'])
 
-stations = pd.read_csv("stations.csv")
+cursor.execute('SELECT * FROM station')
+
+stationsdata = cursor.fetchall()
+
+stations = pd.DataFrame(stationsdata, columns=['name', 'longname.name_alias', 'alpha3', 'tiploc', 'abb'])
+
+#stations = pd.read_csv("stations.csv")
 
 weymouth_weather_df = pd.DataFrame(weatherdata, columns=['name', 'datetime', 'tempmax',	'tempmin',	'temp',	'feelslikemax',	'feelslikemin',	'feelslike', 'dew',	'humidity',	'precip', 'precipprob',	'precipcover',	'preciptype', 'snow', 'snowdepth', 'windgust', 'windspeed',	'winddir', 'sealevelpressure', 'cloudcover', 'visibility',	'solarradiation', 'solarenergy', 'uvindex', 'severerisk', 'sunrise', 'sunset', 'moonphase', 'conditions', 'description', 'icon', 'stations'])
-
-#weymouth_weather_df['snowdepth'] = weymouth_weather_df['snowdepth'].astype('int64', errors='ignore')
 
 # Close connection
 df['rid'] = df['rid'].astype('str')
@@ -326,21 +330,21 @@ if __name__ == '__main__':
     
     #weather()
     #off_peak_times()
-    seasons()
-    x = df.loc[[4,42374,79414,186735,314590]]
+    #seasons()
+    #x = df.loc[[4,42374,79414,186735,314590]]
     #107446, 117601, 120426, 150580
     #print(x)
-    print(x.iloc[:,[0,21]])
+    #print(x.iloc[:,[0,21]])
     #print(df.iloc[21,22,23,24])
     
-    '''
+    
     delay = timedelta(minutes=10)
     
     loaded_rf = joblib.load("./random_forest.joblib")
     scaler = joblib.load("./scaler.joblib")
     x = datetime(2000, 10,10,8,10)
     print(get_arrival_time(loaded_rf, scaler, 'DCH', 'WEY', x, delay))
-    '''
+    
     
     
     
