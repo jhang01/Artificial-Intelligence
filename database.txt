@@ -1,8 +1,3 @@
-CREATE TABLE conversationdetails(
-    user_input VARCHAR(255) NOT NULL,
-    response VARCHAR NOT NULL
-)
-
 CREATE TABLE userdata(
     username VARCHAR(50) NOT NULL,
     user_input VARCHAR(255) NOT NULL,
@@ -13,6 +8,14 @@ CREATE TABLE trainstation(
     station VARCHAR(50) PRIMARY KEY UNIQUE NOT NULL,
     station_name VARCHAR(50) UNIQUE NOT NULL,
     abbreviations VARCHAR(50) UNIQUE NOT NULL
+)
+
+CREATE TABLE station(
+    name VARCHAR(50) NOT NULL,
+    longname_alias VARCHAR(50) NOT NULL,
+    alpha3 VARCHAR(50) NOT NULL,
+    tiploc VARCHAR(50) NOT NULL,
+    abb VARCHAR(50) NOT NULL
 )
 
 CREATE TABLE trainperformance(
@@ -96,16 +99,75 @@ CREATE TABLE weather(
   icon char(50), 
   stations char(255))
   
-  CREATE TABLE ticketinfo(
-	username VARCHAR(255) PRIMARY KEY NOT NULL,
-	fromStation VARCHAR(255) NOT NULL,
-	toStation VARCHAR(255) NOT NULL,
-	departDate date NOT NULL,
-	departTime TIME NOT NULL,
-	isReturn boolean NOT NULL,
-	returnDate date,
-	returnTime TIME 
-);
+  CREATE TABLE weather2017(
+  name char(15), 
+  datetime char(10), 
+  tempmax decimal, 
+  tempmin decimal, 
+  temp decimal, 
+  feelslikemax decimal, 
+  feelslikemin decimal, 
+  feelslike decimal, 
+  dew decimal, 
+  humidity decimal, 
+  precip decimal, 
+  precipprob char(5), 
+  precipcover decimal, 
+  preciptype char(15), 
+  snow char(15), 
+  snowdepth decimal, 
+  windgust decimal, 
+  windspeed decimal, 
+  winddir decimal, 
+  sealevelpressure decimal,
+  cloudcover decimal, 
+  visibility decimal, 
+  solarradiation char(5),
+  solarenergy char(5), 
+  uvindex smallint, 
+  severerisk char(5),
+  sunrise char(25),
+  sunset char(25), 
+  moonphase decimal, 
+  conditions char(50),
+  description char(255),
+  icon char(50), 
+  stations char(255))
+  
+  CREATE TABLE weather2018(
+  name char(15), 
+  datetime char(10), 
+  tempmax decimal, 
+  tempmin decimal, 
+  temp decimal, 
+  feelslikemax decimal, 
+  feelslikemin decimal, 
+  feelslike decimal, 
+  dew decimal, 
+  humidity decimal, 
+  precip decimal, 
+  precipprob char(5), 
+  precipcover decimal, 
+  preciptype char(15), 
+  snow char(15), 
+  snowdepth decimal, 
+  windgust decimal, 
+  windspeed decimal, 
+  winddir decimal, 
+  sealevelpressure decimal,
+  cloudcover decimal, 
+  visibility decimal, 
+  solarradiation char(5),
+  solarenergy char(5), 
+  uvindex smallint, 
+  severerisk char(5),
+  sunrise char(25),
+  sunset char(25), 
+  moonphase decimal, 
+  conditions char(50),
+  description char(255),
+  icon char(50), 
+  stations char(255));
 
 --To add the data into the database table, right click on the table created in the schema and choose 
 --import\export. In Options, change export to import. In file info section, choose the file you need 
