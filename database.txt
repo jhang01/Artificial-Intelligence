@@ -10,6 +10,14 @@ CREATE TABLE trainstation(
     abbreviations VARCHAR(50) UNIQUE NOT NULL
 )
 
+CREATE TABLE trainstation(
+    name VARCHAR(50) NOT NULL,
+    long.name_alias VARCHAR(50) NOT NULL,
+    alpha3 VARCHAR(50) NOT NULL,
+    tiploc VARCHAR(50) NOT NULL,
+    abb VARCHAR(50) NOT NULL
+)
+
 CREATE TABLE trainperformance(
   rid char(16), 
   tpl char(7), 
