@@ -167,18 +167,7 @@ CREATE TABLE weather(
   conditions char(50),
   description char(255),
   icon char(50), 
-  stations char(255))
-  
-  CREATE TABLE ticketinfo(
-	username VARCHAR(255) PRIMARY KEY NOT NULL,
-	fromStation VARCHAR(255) NOT NULL,
-	toStation VARCHAR(255) NOT NULL,
-	departDate date NOT NULL,
-	departTime TIME NOT NULL,
-	isReturn boolean NOT NULL,
-	returnDate date,
-	returnTime TIME 
-);
+  stations char(255));
 
 --To add the data into the database table, right click on the table created in the schema and choose 
 --import\export. In Options, change export to import. In file info section, choose the file you need 
