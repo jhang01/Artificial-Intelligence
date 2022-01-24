@@ -26,9 +26,9 @@ thanks_output = ("Happy to help!")
 
 services_input = ("booking", "ticket info", "delays")
 
-booking_input = {'travel', 'travels', 'book', 'booking', 'bookings', 'book tickets', 'book a ticket', 'book ticket'}
-delay_input = {'predict', 'prediction', 'delay', 'delays', 'train delay info', 'train delay information', 'train delay'}
-ticketInfo_input = {"ticket information", "ticket info", "information", "info"}
+booking_input = {'travel', 'travels', 'book', 'booking', 'bookings', 'book tickets', 'book a ticket', 'book ticket', 'want to book a train ticket', 'want to book train', 'want to book a train'}
+delay_input = {'predict', 'prediction', 'delay', 'delays', 'train delay info', 'train delay information', 'train delay', 'get delay info'}
+ticketInfo_input = {"ticket information", "ticket info", "information", "info", 'get ticket info'}
 present_time_input = {"now", "right now", "immediately", "straight away"}
 
 def greeting(doc):
@@ -46,7 +46,7 @@ def agree(doc):
 
 
 def disagree(doc):
-    doc = nlp(doc)
+    doc = nlt(doc)
     for token in doc:
         if token.text.lower() in disagree_input:
             return (disagree_output)

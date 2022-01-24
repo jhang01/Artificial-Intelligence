@@ -741,7 +741,8 @@ class Booking(KnowledgeEngine):
         userdata = []
         try:
             name = self.knowledge.get('name')
-            conn = psycopg2.connect(database='AIdatabase', user='postgres', password='account7248', host='127.0.0.1', port='5432')
+            #conn = psycopg2.connect(database='AIdatabase', user='postgres', password='account7248', host='127.0.0.1', port='5432')
+            conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
             cursor = conn.cursor()
             query = """SELECT * FROM userdata WHERE username = %s"""
             cursor.execute(query, (name,))
