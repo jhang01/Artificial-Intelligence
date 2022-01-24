@@ -46,7 +46,7 @@ def agree(doc):
 
 
 def disagree(doc):
-    doc = nlt(doc)
+    doc = nlp(doc)
     for token in doc:
         if token.text.lower() in disagree_input:
             return (disagree_output)
