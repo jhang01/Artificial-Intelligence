@@ -35,10 +35,6 @@ cursor.execute('SELECT * FROM weather2017')
 
 weatherdata = cursor.fetchall()
 
-cursor.execute('SELECT * FROM singletrainperformance')
-
-singledata = cursor.fetchall()
-
 df = pd.DataFrame(data, columns=['rid', 'tpl', 'pta', 'ptd', 'wta', 'wtp', 'wtd', 'arr_et', 'arr_wet', 'arr_atRemoved',	'pass_et', 'pass_wet', 'pass_atRemoved', 'dep_et', 'dep_wet', 'dep_atRemoved', 'arr_at', 'pass_at', 'dep_at', 'cr_code', 'lr_code'])
 
 cursor.execute('SELECT * FROM station')
@@ -47,7 +43,7 @@ stationsdata = cursor.fetchall()
 
 stations = pd.DataFrame(stationsdata, columns=['name', 'longname.name_alias', 'alpha3', 'tiploc', 'abb'])
 
-#stations = pd.read_csv("stations.csv")
+stations = pd.read_csv("stations.csv")
 
 weymouth_weather_df = pd.DataFrame(weatherdata, columns=['name', 'datetime', 'tempmax',	'tempmin',	'temp',	'feelslikemax',	'feelslikemin',	'feelslike', 'dew',	'humidity',	'precip', 'precipprob',	'precipcover',	'preciptype', 'snow', 'snowdepth', 'windgust', 'windspeed',	'winddir', 'sealevelpressure', 'cloudcover', 'visibility',	'solarradiation', 'solarenergy', 'uvindex', 'severerisk', 'sunrise', 'sunset', 'moonphase', 'conditions', 'description', 'icon', 'stations'])
 
@@ -120,8 +116,6 @@ def calculate_arrival_time(begin_station, destination_station, left_time_date, d
     #to_index = time_difference_df.index[time_difference_df['To'] == destination_station].tolist()[0]
     to_index = time_difference_df.index[time_difference_df['From'] == destination_station].tolist()[0]
     print(time_difference_df)
-    print(from_index)
-    print(to_index)
     if to_index > from_index:
         mins = int(sum(time_difference_df['Minutes'].iloc[from_index:to_index]))
     else:
@@ -130,6 +124,8 @@ def calculate_arrival_time(begin_station, destination_station, left_time_date, d
         from_index = to_index
         to_index = temp_index
     print(mins)
+    print('from index: ' + str(from_index))
+    print('to index: ' + str(to_index))
     estimate_time = left_time_date + timedelta(minutes=mins) + delay_amount
 
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -143,10 +139,13 @@ def calculate_arrival_time(begin_station, destination_station, left_time_date, d
     current_season = check_season(datetime.now().strftime('%m'))
     predicted_delay = 0
 
+
     for i in range(from_index, to_index):
         print('---')
         left_time_date = left_time_date + timedelta(minutes=time_difference_df.loc[i]['Minutes'])
+        print('time: ' + str(left_time_date))
         current_offtime = is_off_time(str(left_time_date.time()), date.today().weekday())
+        print('offtime: ' + str(current_offtime))
         scaled = scaler.transform([[current_temp, current_precip, current_condition, current_snowdepth, current_offtime, current_season]])
         predicted_delay = prediction_model.predict(scaled)
         print(predicted_delay)
@@ -157,6 +156,8 @@ def calculate_arrival_time(begin_station, destination_station, left_time_date, d
         estimate_time = estimate_time + timedelta(minutes=1)
 
     total_delay = int(predicted_delay[0] + (delay_amount.seconds/60))
+
+    print(predicted_delay[0] + (delay_amount.seconds/60))
 
     return estimate_time, total_delay
 
@@ -349,12 +350,12 @@ if __name__ == '__main__':
     #print(df.iloc[21,22,23,24])
     
     
-    delay = timedelta(minutes=10)
+    delay = timedelta(minutes=9)
     
     loaded_rf = joblib.load("./random_forest.joblib")
     scaler = joblib.load("./scaler.joblib")
     x = datetime(2000, 10,10,8,10)
-    print(get_arrival_time(loaded_rf, scaler, 'DCH', 'WEY', x, delay))
+    print(get_arrival_time(loaded_rf, scaler, 'WAT', 'WEY', x, delay))
     
     
     
