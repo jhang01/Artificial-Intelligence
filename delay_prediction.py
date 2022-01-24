@@ -53,18 +53,24 @@ weymouth_weather_df = pd.DataFrame(weatherdata, columns=['name', 'datetime', 'te
 
 # Close connection
 df['rid'] = df['rid'].astype('str')
-conn.close()
 
 #weymouth_weather_df = pd.read_csv('southampton_weather_2017_days.csv')
+cursor.execute('SELECT * FROM singletrainperformance')
 
-single_performance_df = pd.read_csv('single_train_performance.csv')
+singleperformancedata = cursor.fetchall()
+
+conn.close()
+
+single_performance_df = pd.DataFrame(singleperformancedata, columns=['rid', 'tpl', 'pta', 'ptd', 'wta', 'wtp', 'wtd', 'arr_et', 'arr_wet', 'arr_atRemoved',	'pass_et', 'pass_wet', 'pass_atRemoved', 'dep_et', 'dep_wet', 'dep_atRemoved', 'arr_at', 'pass_at', 'dep_at', 'cr_code', 'lr_code'])
+
+#single_performance_df = pd.read_csv('single_train_performance.csv')
 
 time_difference = {'From':[], 'Minutes':[]}
 
 def estimate_time_difference():
     for i in range(0, 61):
-        departing_station = single_performance_df.loc[i]['tpl']
-        arriving_station = single_performance_df.loc[i + 1]['tpl']
+        departing_station = single_performance_df.loc[i]['tpl'].strip()
+        arriving_station = single_performance_df.loc[i + 1]['tpl'].strip()
         departing_time = ''
         arriving_time = ''
         if isinstance(single_performance_df.loc[i]['ptd'], str):
