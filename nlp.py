@@ -2,7 +2,7 @@ import dateparser
 import dateutil
 from dateutil import parser
 import spacy
-from spacy.matcher import Matcher
+from spacy.matcher import Matcher 
 
 import kb
 import predicting_location
