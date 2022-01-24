@@ -10,7 +10,7 @@ CREATE TABLE trainstation(
     abbreviations VARCHAR(50) UNIQUE NOT NULL
 )
 
-CREATE TABLE trainstation(
+CREATE TABLE station(
     name VARCHAR(50) NOT NULL,
     longname_alias VARCHAR(50) NOT NULL,
     alpha3 VARCHAR(50) NOT NULL,
