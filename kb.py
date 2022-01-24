@@ -721,12 +721,17 @@ class Booking(KnowledgeEngine):
           salience=83)
     def predict_delay(self, predictFromLocationAbb, predictToLocationAbb, predictDepartTime, predictDelay):
         #print(predictFromLocationAbb, predictToLocationAbb, predictDepartTime, predictDelay)
-        delay_time = delay_prediction.get_arrival_time(loaded_rf, scale, predictFromLocationAbb, predictToLocationAbb,
+        delay_time, total_delay_min = delay_prediction.get_arrival_time(loaded_rf, scale, predictFromLocationAbb, predictToLocationAbb,
                                                        predictDepartTime, predictDelay)
         if not delay_time:
             set_response("Failed to make prediction based on information provided")
         else:
             set_response("Your train will reach you destination at: " + delay_time.strftime("%H:%M"))
+            print(total_delay_min)
+            if total_delay_min >= 0:
+                set_response("Your train is delayed by " + str(total_delay_min) + " minutes")
+            else:
+                set_response("Your train will arrive early by " + str(abs(total_delay_min) + " minutes"))
             self.knowledge['informationGiven'] = True
             self.declare(Fact(informationGiven=True))
             self.declare(Fact(whatsNext=True))

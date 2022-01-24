@@ -4,8 +4,8 @@ import difflib
 import unittest
 import psycopg2
 
-conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
-#conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
+#conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
+conn = psycopg2.connect(database = 'AIdatabase', user = 'postgres', password='account7248',host='127.0.0.1', port='5432')
 
 cursor = conn.cursor()
 
