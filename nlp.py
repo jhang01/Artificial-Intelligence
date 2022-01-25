@@ -10,6 +10,10 @@ from datetime import datetime
 
 nlp = spacy.load('en_core_web_lg')
 
+bot_jokes = ("I bought a wooden computer, guess what? It wooden work!", "How do robots pay for things?  With cache, of course!", "How many letters are there in the robot alphabet? Two – 0 and 1!" )
+
+joke_input = ("joke", "tell me a joke", "make me laugh")
+
 greeting_input = ("hey", "hi", "good morning", "good evening", "morning", "evening", "hello")
 greeting_output = "Please could you provide us with a username, if you do not have one please reply with a " \
                   "desired username. "
@@ -178,6 +182,9 @@ def get_entities(message):
     if str(message) in greeting_input:
         kbdictionary['greeting'] = 'true'
 
+    if str(message) in joke_input:
+        kbdictionary['joke'] = 'true'
+
     if str(message) in agree_input:
         kbdictionary['answer'] = 'true'
 
@@ -185,7 +192,7 @@ def get_entities(message):
         kbdictionary['answer'] = 'false'
 
     if kb.hasUsername is False:
-        if len(str(message).split()) == 1 and 'greeting' not in kbdictionary:
+        if len(str(message).split()) == 1 and 'greeting' not in kbdictionary and 'joke' not in kbdictionary:
             kbdictionary['name'] = str(message)
 
     locations = []
