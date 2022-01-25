@@ -7,7 +7,7 @@ import delay_prediction
 from web_scrapper import Ticket
 import nlp
 from datetime import timedelta
-
+import random
 global response
 global username
 global error_response
@@ -175,6 +175,11 @@ class Booking(KnowledgeEngine):
         if 'userData' in self.knowledge:
             print(self.knowledge.get('userData'))
             yield Fact(userData=self.knowledge.get('userData'))
+
+    @Rule(salience=101)  # higher number priority
+    def message_joke(self):
+        if 'joke' in self.dictionary:
+            set_response(random.choice(nlp.bot_jokes)) # respond joke
 
     @Rule(NOT(Fact(service='chat')),
           salience=100)  # higher number priority
@@ -747,8 +752,8 @@ class Booking(KnowledgeEngine):
         userdata = []
         try:
             name = self.knowledge.get('name')
-            #conn = psycopg2.connect(database='AIdatabase', user='postgres', password='account7248', host='127.0.0.1', port='5432')
-            conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
+            conn = psycopg2.connect(database='AIdatabase', user='postgres', password='account7248', host='127.0.0.1', port='5432')
+            #conn = psycopg2.connect(database = 'train', user = 'postgres', password='meow', host='127.0.0.1', port='5432')
             cursor = conn.cursor()
             query = """SELECT * FROM userdata WHERE username = %s"""
             cursor.execute(query, (name,))
