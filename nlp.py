@@ -27,7 +27,7 @@ thanks_output = ("Happy to help!")
 services_input = ("booking", "ticket info", "delays")
 
 booking_input = {'travel', 'travels', 'book', 'booking', 'bookings', 'book tickets', 'book a ticket', 'book ticket', 'want to book a train ticket', 'want to book train', 'want to book a train', 'booking train ticket'}
-delay_input = {'predict', 'prediction', 'delay', 'delays', 'train delay info', 'train delay information', 'train delay', 'get train delay info', 'get delay info'}
+delay_input = {'predict', 'prediction', 'delay', 'delays', 'train delay info', 'train delay information', 'train delay', 'get train delay info', 'get delay info', 'predict delay'}
 ticketInfo_input = {"ticket information", "ticket info", "information", "info", 'get ticket info'}
 present_time_input = {"now", "right now", "immediately", "straight away"}
 
